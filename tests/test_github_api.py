@@ -178,7 +178,7 @@ def _patch_urlopen(monkeypatch: pytest.MonkeyPatch, responses: list[Any]) -> lis
     captured: list[Any] = []
     queue = list(responses)
 
-    def fake_urlopen(req, timeout=None):  # noqa: ANN001
+    def fake_urlopen(req, timeout=None, context=None):  # noqa: ANN001
         captured.append(req)
         if not queue:
             raise AssertionError("urlopen called more times than expected")

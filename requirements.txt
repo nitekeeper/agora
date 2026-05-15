@@ -1,0 +1,12 @@
+# Runtime dependencies for agora marketplace tooling.
+# stdlib covers almost everything; these two handle real-world TLS on Windows.
+
+# JSON Schema Draft 2020-12 validation (used by agora:validate).
+jsonschema>=4.20
+
+# SSL trust roots for GitHub API requests.
+# truststore uses the OS-native cert store (preferred on Windows where
+# Python's bundled OpenSSL can't always validate GitHub's chain).
+# certifi is the fallback CA bundle.
+truststore>=0.9
+certifi>=2024.7.4

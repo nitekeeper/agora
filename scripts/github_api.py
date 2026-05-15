@@ -9,12 +9,35 @@ from __future__ import annotations
 
 import json
 import os
+import ssl
 import subprocess
 import time
 import urllib.error
 import urllib.request
 import warnings
 from dataclasses import dataclass
+
+
+def _build_ssl_context() -> ssl.SSLContext:
+    """Build an SSL context. Order of preference:
+    1. truststore (system-native cert store; needed on Windows where the
+       bundled Python OpenSSL build can't validate some chains).
+    2. certifi (curated Mozilla CA bundle).
+    3. stdlib default.
+    Result is cached at module load."""
+    try:
+        import truststore
+        return truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    except ImportError:
+        pass
+    try:
+        import certifi
+        return ssl.create_default_context(cafile=certifi.where())
+    except ImportError:
+        return ssl.create_default_context()
+
+
+_SSL_CONTEXT = _build_ssl_context()
 
 _API_BASE = "https://api.github.com"
 _USER_AGENT = "agora/0.1"
@@ -137,7 +160,7 @@ def _do_request(req: urllib.request.Request) -> tuple[int, dict, object]:
     """Perform a single HTTP request. Returns (status, payload, headers).
     Does not raise on HTTP errors — only on network errors."""
     try:
-        resp = urllib.request.urlopen(req, timeout=_TIMEOUT_SECS)
+        resp = urllib.request.urlopen(req, timeout=_TIMEOUT_SECS, context=_SSL_CONTEXT)
     except urllib.error.HTTPError as e:
         status = e.code
         headers = e.headers

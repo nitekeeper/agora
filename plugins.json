@@ -7,5 +7,48 @@
       "name": "nitekeeper"
     }
   },
-  "plugins": []
+  "plugins": [
+    {
+      "name": "nitekeeper-atelier",
+      "repository_url": "https://github.com/nitekeeper/atelier.git",
+      "current_version": "v1.0.0",
+      "current_sha": "0f08aa7b0a1031d6a466964e14c15fdf265c3e59",
+      "description": "Shared workspace methodology and dev workflow for human-AI development teams",
+      "license": "MIT",
+      "author": {
+        "name": "nitekeeper"
+      },
+      "homepage": "https://github.com/nitekeeper/atelier",
+      "registered_at": "2026-05-15T21:57:41.212273Z",
+      "updated_at": "2026-05-15T21:57:41.212273Z"
+    },
+    {
+      "name": "nitekeeper-memex",
+      "repository_url": "https://github.com/nitekeeper/memex.git",
+      "current_version": "v1.0.0",
+      "current_sha": "ffef2572cd4e9d754a91a4da0a9a188d9cd68d7c",
+      "description": "Persistent context, knowledge wiki, and ask-anything memory for Claude Code sessions",
+      "license": "MIT",
+      "author": {
+        "name": "nitekeeper"
+      },
+      "homepage": "https://github.com/nitekeeper/memex",
+      "registered_at": "2026-05-15T21:57:55.019178Z",
+      "updated_at": "2026-05-15T21:57:55.019178Z"
+    },
+    {
+      "name": "nitekeeper-agora",
+      "repository_url": "https://github.com/nitekeeper/agora.git",
+      "current_version": "v0.1.0",
+      "current_sha": "27050857e59be9bba6b572875c34539220f33f5d",
+      "description": "Custom Claude Code plugin marketplace. Curated index of plugin pointers with versioned releases.",
+      "license": "MIT",
+      "author": {
+        "name": "nitekeeper"
+      },
+      "homepage": "https://github.com/nitekeeper/agora",
+      "registered_at": "2026-05-15T21:57:57.954356Z",
+      "updated_at": "2026-05-15T21:57:57.954356Z"
+    }
+  ]
 }
