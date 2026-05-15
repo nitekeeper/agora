@@ -9,46 +9,46 @@
   },
   "plugins": [
     {
-      "name": "nitekeeper-atelier",
+      "name": "atelier",
       "repository_url": "https://github.com/nitekeeper/atelier.git",
-      "current_version": "v1.0.2",
-      "current_sha": "fbc6e1703bf04de9cabb61eacd3b7aaac3dd708f",
+      "current_version": "v1.0.3",
+      "current_sha": "b869b49c5a66fc80a90bd985751417c1c8cb6b8f",
       "description": "Shared workspace methodology and dev workflow for human-AI development teams",
       "license": "MIT",
       "author": {
         "name": "nitekeeper"
       },
       "homepage": "https://github.com/nitekeeper/atelier",
-      "registered_at": "2026-05-15T21:57:41.212273Z",
-      "updated_at": "2026-05-15T23:01:38.505003Z"
+      "registered_at": "2026-05-15T23:40:52.358955Z",
+      "updated_at": "2026-05-15T23:40:52.358955Z"
     },
     {
-      "name": "nitekeeper-memex",
+      "name": "memex",
       "repository_url": "https://github.com/nitekeeper/memex.git",
-      "current_version": "v1.0.1",
-      "current_sha": "e11e95e128c55834d781847ea6bf3b21c97dae1e",
+      "current_version": "v1.0.2",
+      "current_sha": "e91abd2d70bc145b747e4474fb8687367333f30b",
       "description": "Persistent context, knowledge wiki, and ask-anything memory for Claude Code sessions",
       "license": "MIT",
       "author": {
         "name": "nitekeeper"
       },
       "homepage": "https://github.com/nitekeeper/memex",
-      "registered_at": "2026-05-15T21:57:55.019178Z",
-      "updated_at": "2026-05-15T22:38:43.854118Z"
+      "registered_at": "2026-05-15T23:40:55.313432Z",
+      "updated_at": "2026-05-15T23:40:55.313432Z"
     },
     {
-      "name": "nitekeeper-agora",
+      "name": "agora",
       "repository_url": "https://github.com/nitekeeper/agora.git",
-      "current_version": "v0.1.0",
-      "current_sha": "27050857e59be9bba6b572875c34539220f33f5d",
+      "current_version": "v0.1.1",
+      "current_sha": "9bca507f635c9411908c6c062a47a9a81bd2aae9",
       "description": "Custom Claude Code plugin marketplace. Curated index of plugin pointers with versioned releases.",
       "license": "MIT",
       "author": {
         "name": "nitekeeper"
       },
       "homepage": "https://github.com/nitekeeper/agora",
-      "registered_at": "2026-05-15T21:57:57.954356Z",
-      "updated_at": "2026-05-15T21:57:57.954356Z"
+      "registered_at": "2026-05-15T23:40:58.174074Z",
+      "updated_at": "2026-05-15T23:40:58.174074Z"
     }
   ]
 }
