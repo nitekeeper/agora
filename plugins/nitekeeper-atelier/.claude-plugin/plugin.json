@@ -1,8 +1,0 @@
-{
-  "name": "nitekeeper-atelier",
-  "version": "0.0.0-validation-test",
-  "description": "Validation stub for testing <owner>-<repo> name format. Not for use.",
-  "author": {
-    "name": "nitekeeper"
-  }
-}

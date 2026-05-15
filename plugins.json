@@ -1,0 +1,11 @@
+{
+  "$schema": "https://nitekeeper.github.io/agora/plugins.schema.json",
+  "marketplace": {
+    "name": "agora",
+    "description": "Custom Claude Code plugin marketplace",
+    "owner": {
+      "name": "nitekeeper"
+    }
+  },
+  "plugins": []
+}
