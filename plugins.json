@@ -11,8 +11,8 @@
     {
       "name": "nitekeeper-atelier",
       "repository_url": "https://github.com/nitekeeper/atelier.git",
-      "current_version": "v1.0.0",
-      "current_sha": "0f08aa7b0a1031d6a466964e14c15fdf265c3e59",
+      "current_version": "v1.0.1",
+      "current_sha": "d0bac8ac850ecd10ce7b57989e8ad4baff6a8d1b",
       "description": "Shared workspace methodology and dev workflow for human-AI development teams",
       "license": "MIT",
       "author": {
@@ -20,13 +20,13 @@
       },
       "homepage": "https://github.com/nitekeeper/atelier",
       "registered_at": "2026-05-15T21:57:41.212273Z",
-      "updated_at": "2026-05-15T21:57:41.212273Z"
+      "updated_at": "2026-05-15T22:38:40.837730Z"
     },
     {
       "name": "nitekeeper-memex",
       "repository_url": "https://github.com/nitekeeper/memex.git",
-      "current_version": "v1.0.0",
-      "current_sha": "ffef2572cd4e9d754a91a4da0a9a188d9cd68d7c",
+      "current_version": "v1.0.1",
+      "current_sha": "e11e95e128c55834d781847ea6bf3b21c97dae1e",
       "description": "Persistent context, knowledge wiki, and ask-anything memory for Claude Code sessions",
       "license": "MIT",
       "author": {
@@ -34,7 +34,7 @@
       },
       "homepage": "https://github.com/nitekeeper/memex",
       "registered_at": "2026-05-15T21:57:55.019178Z",
-      "updated_at": "2026-05-15T21:57:55.019178Z"
+      "updated_at": "2026-05-15T22:38:43.854118Z"
     },
     {
       "name": "nitekeeper-agora",
