@@ -1,6 +1,6 @@
 {
   "name": "agora",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Custom Claude Code plugin marketplace tooling — compile, register, update, check",
   "author": {
     "name": "nitekeeper"

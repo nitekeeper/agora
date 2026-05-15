@@ -110,7 +110,7 @@ def test_register_new_plugin_writes_full_entry(
         marketplace_path=marketplace_path,
     )
 
-    assert entry["name"] == "nitekeeper-atelier"
+    assert entry["name"] == "atelier"
     assert entry["repository_url"] == "https://github.com/nitekeeper/atelier.git"
     assert entry["current_version"] == "v1.0.0"
     assert entry["current_sha"] == "a" * 40
@@ -132,7 +132,7 @@ def test_register_new_plugin_writes_full_entry(
     assert marketplace_path.exists()
     market = json.loads(marketplace_path.read_text(encoding="utf-8"))
     assert len(market["plugins"]) == 1
-    assert market["plugins"][0]["name"] == "nitekeeper-atelier"
+    assert market["plugins"][0]["name"] == "atelier"
     assert market["plugins"][0]["source"]["ref"] == "v1.0.0"
 
 
@@ -140,7 +140,7 @@ def test_register_existing_plugin_preserves_registered_at(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     old_entry = {
-        "name": "nitekeeper-atelier",
+        "name": "atelier",
         "repository_url": "https://github.com/nitekeeper/atelier.git",
         "current_version": "v0.9.0",
         "current_sha": "b" * 40,
@@ -201,7 +201,7 @@ def test_register_auto_detects_url_from_cwd(
         plugins_path=plugins_path,
         marketplace_path=marketplace_path,
     )
-    assert entry["name"] == "nitekeeper-atelier"
+    assert entry["name"] == "atelier"
 
 
 # ---------- error paths ----------
@@ -470,7 +470,7 @@ def test_register_plugin_name_lowercased(
         plugins_path=plugins_path,
         marketplace_path=marketplace_path,
     )
-    assert entry["name"] == "nitekeeper-atelier"
+    assert entry["name"] == "atelier"
 
 
 def test_register_homepage_defaults_to_github(

@@ -1,5 +1,5 @@
 ---
-name: agora-check
+name: agora:check
 description: Use when refreshing the local "latest available version" cache for all registered plugins. Read by the session-start update banner.
 ---
 
@@ -23,8 +23,8 @@ Honors a 24-hour TTL. If `~/.agora/check-cache.json` exists and was refreshed le
 Otherwise, iterates every plugin in `plugins.json`, runs `git ls-remote --tags <repository_url>`, picks the highest semver tag, and writes the result to `~/.agora/check-cache.json`. Progress is printed one line per plugin:
 
 ```
-  nitekeeper-atelier: v1.3.0
-  nitekeeper-memex: ERROR (git ls-remote failed)
+  atelier: v1.3.0
+  memex: ERROR (git ls-remote failed)
 Checked 2 plugin(s) — 1 outdated, 1 errors.
 ```
 
@@ -49,11 +49,11 @@ Emit the full cache dict to stdout as JSON instead of the human progress + summa
   "fetched_at": "2026-05-15T19:00:00Z",
   "include_prerelease": false,
   "plugins": {
-    "nitekeeper-atelier": {
+    "atelier": {
       "latest_version": "v1.3.0",
       "checked_at": "2026-05-15T19:00:00Z"
     },
-    "nitekeeper-memex": {
+    "memex": {
       "latest_version": null,
       "error": "git ls-remote failed: ...",
       "checked_at": "2026-05-15T19:00:00Z"

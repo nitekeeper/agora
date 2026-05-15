@@ -1,5 +1,5 @@
 ---
-name: agora-compile
+name: agora:compile
 description: Use when plugins.json has been edited by hand and the generated marketplace.json needs to be refreshed. Translates plugins.json -> .claude-plugin/marketplace.json.
 ---
 

@@ -36,7 +36,7 @@ def good_doc() -> dict:
         },
         "plugins": [
             {
-                "name": "nitekeeper-atelier",
+                "name": "atelier",
                 "repository_url": "https://github.com/nitekeeper/atelier.git",
                 "current_version": "v1.0.0",
                 "current_sha": "abc1230000000000000000000000000000000000",

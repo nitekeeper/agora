@@ -177,7 +177,7 @@ def _write_cache(cache_path: Path, plugins: dict, fetched_at: str = "2026-05-15T
 def test_banner_no_cache_is_silent(fake_paths, capsys):
     """If check-cache.json is missing, banner is silent."""
     plugins, _ = fake_paths
-    _write_plugins(plugins, [{"name": "nitekeeper-atelier", "current_version": "v1.0.0"}])
+    _write_plugins(plugins, [{"name": "atelier", "current_version": "v1.0.0"}])
 
     session_start.show_update_banner()
 
@@ -189,7 +189,7 @@ def test_banner_no_cache_is_silent(fake_paths, capsys):
 def test_banner_malformed_cache_is_silent(fake_paths, capsys):
     """If cache JSON is malformed, banner is silent."""
     plugins, _ = fake_paths
-    _write_plugins(plugins, [{"name": "nitekeeper-atelier", "current_version": "v1.0.0"}])
+    _write_plugins(plugins, [{"name": "atelier", "current_version": "v1.0.0"}])
     _touch(paths.CHECK_CACHE_JSON, "{not valid json")
 
     session_start.show_update_banner()
@@ -201,7 +201,7 @@ def test_banner_malformed_cache_is_silent(fake_paths, capsys):
 
 def test_banner_no_plugins_json_is_silent(fake_paths, capsys):
     """If plugins.json is missing, banner is silent."""
-    _write_cache(paths.CHECK_CACHE_JSON, {"nitekeeper-atelier": {"latest_version": "v1.3.0"}})
+    _write_cache(paths.CHECK_CACHE_JSON, {"atelier": {"latest_version": "v1.3.0"}})
 
     session_start.show_update_banner()
 
@@ -214,7 +214,7 @@ def test_banner_malformed_plugins_json_is_silent(fake_paths, capsys):
     """If plugins.json is malformed, banner is silent."""
     plugins, _ = fake_paths
     _touch(plugins, "{not valid json")
-    _write_cache(paths.CHECK_CACHE_JSON, {"nitekeeper-atelier": {"latest_version": "v1.3.0"}})
+    _write_cache(paths.CHECK_CACHE_JSON, {"atelier": {"latest_version": "v1.3.0"}})
 
     session_start.show_update_banner()
 
@@ -229,17 +229,17 @@ def test_banner_lists_only_outdated_plugins(fake_paths, capsys):
     _write_plugins(
         plugins,
         [
-            {"name": "nitekeeper-atelier", "current_version": "v1.0.0"},
-            {"name": "nitekeeper-memex", "current_version": "v0.3.0"},
-            {"name": "nitekeeper-uptodate", "current_version": "v2.0.0"},
+            {"name": "atelier", "current_version": "v1.0.0"},
+            {"name": "memex", "current_version": "v0.3.0"},
+            {"name": "uptodate", "current_version": "v2.0.0"},
         ],
     )
     _write_cache(
         paths.CHECK_CACHE_JSON,
         {
-            "nitekeeper-atelier": {"latest_version": "v1.3.0", "checked_at": "x"},
-            "nitekeeper-memex": {"latest_version": "v0.4.0", "checked_at": "x"},
-            "nitekeeper-uptodate": {"latest_version": "v2.0.0", "checked_at": "x"},
+            "atelier": {"latest_version": "v1.3.0", "checked_at": "x"},
+            "memex": {"latest_version": "v0.4.0", "checked_at": "x"},
+            "uptodate": {"latest_version": "v2.0.0", "checked_at": "x"},
         },
     )
 
@@ -247,9 +247,9 @@ def test_banner_lists_only_outdated_plugins(fake_paths, capsys):
 
     captured = capsys.readouterr()
     assert "Plugin updates available:" in captured.out
-    assert "nitekeeper-atelier" in captured.out
-    assert "nitekeeper-memex" in captured.out
-    assert "nitekeeper-uptodate" not in captured.out
+    assert "atelier" in captured.out
+    assert "memex" in captured.out
+    assert "uptodate" not in captured.out
     assert "v1.0.0 -> v1.3.0" in captured.out
     assert "v0.3.0 -> v0.4.0" in captured.out
     assert "agora:update --all" in captured.out
@@ -258,8 +258,8 @@ def test_banner_lists_only_outdated_plugins(fake_paths, capsys):
 def test_banner_all_up_to_date_is_silent(fake_paths, capsys):
     """If everything is current, banner is silent."""
     plugins, _ = fake_paths
-    _write_plugins(plugins, [{"name": "nitekeeper-atelier", "current_version": "v1.0.0"}])
-    _write_cache(paths.CHECK_CACHE_JSON, {"nitekeeper-atelier": {"latest_version": "v1.0.0"}})
+    _write_plugins(plugins, [{"name": "atelier", "current_version": "v1.0.0"}])
+    _write_cache(paths.CHECK_CACHE_JSON, {"atelier": {"latest_version": "v1.0.0"}})
 
     session_start.show_update_banner()
 
@@ -273,23 +273,23 @@ def test_banner_skips_plugin_with_null_latest(fake_paths, capsys):
     _write_plugins(
         plugins,
         [
-            {"name": "nitekeeper-atelier", "current_version": "v1.0.0"},
-            {"name": "nitekeeper-errored", "current_version": "v0.3.0"},
+            {"name": "atelier", "current_version": "v1.0.0"},
+            {"name": "errored", "current_version": "v0.3.0"},
         ],
     )
     _write_cache(
         paths.CHECK_CACHE_JSON,
         {
-            "nitekeeper-atelier": {"latest_version": "v1.3.0"},
-            "nitekeeper-errored": {"latest_version": None, "error": "ls-remote failed"},
+            "atelier": {"latest_version": "v1.3.0"},
+            "errored": {"latest_version": None, "error": "ls-remote failed"},
         },
     )
 
     session_start.show_update_banner()
 
     captured = capsys.readouterr()
-    assert "nitekeeper-atelier" in captured.out
-    assert "nitekeeper-errored" not in captured.out
+    assert "atelier" in captured.out
+    assert "errored" not in captured.out
 
 
 def test_banner_skips_plugin_not_in_cache(fake_paths, capsys):
@@ -298,39 +298,39 @@ def test_banner_skips_plugin_not_in_cache(fake_paths, capsys):
     _write_plugins(
         plugins,
         [
-            {"name": "nitekeeper-atelier", "current_version": "v1.0.0"},
-            {"name": "nitekeeper-uncached", "current_version": "v0.1.0"},
+            {"name": "atelier", "current_version": "v1.0.0"},
+            {"name": "uncached", "current_version": "v0.1.0"},
         ],
     )
     _write_cache(
         paths.CHECK_CACHE_JSON,
-        {"nitekeeper-atelier": {"latest_version": "v1.3.0"}},
+        {"atelier": {"latest_version": "v1.3.0"}},
     )
 
     session_start.show_update_banner()
 
     captured = capsys.readouterr()
-    assert "nitekeeper-atelier" in captured.out
-    assert "nitekeeper-uncached" not in captured.out
+    assert "atelier" in captured.out
+    assert "uncached" not in captured.out
 
 
 def test_banner_ignores_stale_cache_rows(fake_paths, capsys):
     """Cache entries for plugins no longer in plugins.json are ignored."""
     plugins, _ = fake_paths
-    _write_plugins(plugins, [{"name": "nitekeeper-atelier", "current_version": "v1.0.0"}])
+    _write_plugins(plugins, [{"name": "atelier", "current_version": "v1.0.0"}])
     _write_cache(
         paths.CHECK_CACHE_JSON,
         {
-            "nitekeeper-atelier": {"latest_version": "v1.3.0"},
-            "nitekeeper-removed": {"latest_version": "v9.9.9"},
+            "atelier": {"latest_version": "v1.3.0"},
+            "removed": {"latest_version": "v9.9.9"},
         },
     )
 
     session_start.show_update_banner()
 
     captured = capsys.readouterr()
-    assert "nitekeeper-atelier" in captured.out
-    assert "nitekeeper-removed" not in captured.out
+    assert "atelier" in captured.out
+    assert "removed" not in captured.out
 
 
 def test_banner_aligns_columns_by_max_name_width(fake_paths, capsys):
@@ -364,7 +364,7 @@ def test_banner_aligns_columns_by_max_name_width(fake_paths, capsys):
 def test_banner_swallows_unexpected_exception(fake_paths, monkeypatch, capsys):
     """A corrupt cache structure causing an exception is caught; stderr warning emitted."""
     plugins, _ = fake_paths
-    _write_plugins(plugins, [{"name": "nitekeeper-atelier", "current_version": "v1.0.0"}])
+    _write_plugins(plugins, [{"name": "atelier", "current_version": "v1.0.0"}])
     # cache "plugins" is a list rather than a dict — entry lookup will go wrong
     # downstream. Force a corrupt structure by writing an unexpected top-level type.
     _touch(paths.CHECK_CACHE_JSON, json.dumps({"plugins": "not-a-dict"}))

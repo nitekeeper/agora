@@ -96,13 +96,14 @@ Direct pushes to `main` are blocked.
 
 ### Plugin naming
 
-Plugin names follow `<owner>-<repo>` with a single dash separator.
+Plugin names use the bare `<repo>` name (lowercase, `.git` stripped).
 
-Example: `github.com/nitekeeper/atelier` → plugin name `nitekeeper-atelier`.
+Example: `github.com/nitekeeper/atelier` → plugin name `atelier`.
 
-Names must be lowercase alphanumeric plus dot and dash. The dash separator
-between owner and repo is positional, not structural — agora stores the source
-git URL as the real anchor.
+Names must be lowercase alphanumeric plus dot and dash. Because the owner is
+dropped, two plugins from different owners with the same repo name would
+collide; agora is currently single-owner, so this is acceptable. Agora stores
+the source git URL as the real anchor.
 
 ### Field derivation
 
@@ -111,7 +112,7 @@ Authors don't maintain agora-specific files.
 
 | Field | Sourced from |
 |---|---|
-| `name` | URL path → `<owner>-<repo>` |
+| `name` | URL path → `<repo>` (lowercase) |
 | `repository_url` | The URL |
 | `current_version` | Latest stable git tag |
 | `current_sha` | Tag → commit resolution |

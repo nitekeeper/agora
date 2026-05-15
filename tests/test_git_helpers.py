@@ -31,7 +31,7 @@ class TestParseUrl:
 
 
 def test_plugin_name_lowercase():
-    assert gh.plugin_name_from_url("https://github.com/Nitekeeper/Atelier.git") == "nitekeeper-atelier"
+    assert gh.plugin_name_from_url("https://github.com/Nitekeeper/Atelier.git") == "atelier"
 
 
 class TestLsRemoteTags:

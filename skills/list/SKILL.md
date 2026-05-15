@@ -1,5 +1,5 @@
 ---
-name: agora-list
+name: agora:list
 description: Use when you want to see what plugins are registered in the local agora marketplace and optionally which ones have updates available.
 ---
 
@@ -22,9 +22,9 @@ Run from the agora repo root.
 Prints a columnar table of registered plugins:
 
 ```
-NAME                  VERSION   LICENSE       CATEGORY
-nitekeeper-atelier    v1.0.0    MIT           development
-nitekeeper-memex      v0.3.1    Apache-2.0    productivity
+NAME        VERSION   LICENSE       CATEGORY
+atelier     v1.0.0    MIT           development
+memex       v0.3.1    Apache-2.0    productivity
 ```
 
 Header is bolded via ANSI escape when stdout is a TTY; plain text when piped. Column widths are sized to the data with a small minimum so the header line aligns.
@@ -36,9 +36,9 @@ If `plugins.json` is empty, prints `(no plugins registered)`.
 Reads `~/.agora/check-cache.json` (populated by `agora:check`) and adds `LATEST` / `STATUS` columns:
 
 ```
-NAME                  CURRENT   LATEST    STATUS
-nitekeeper-atelier    v1.0.0    v1.3.0    outdated
-nitekeeper-memex      v0.3.1    v0.3.1    up-to-date
+NAME        CURRENT   LATEST    STATUS
+atelier     v1.0.0    v1.3.0    outdated
+memex       v0.3.1    v0.3.1    up-to-date
 ```
 
 Status values:

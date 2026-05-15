@@ -26,7 +26,7 @@ def _write_json(path: Path, data: dict) -> None:
 @pytest.fixture
 def good_plugin() -> dict:
     return {
-        "name": "nitekeeper-atelier",
+        "name": "atelier",
         "repository_url": "https://github.com/nitekeeper/atelier.git",
         "current_version": "v1.0.0",
         "current_sha": "abc1230000000000000000000000000000000000",
@@ -140,13 +140,13 @@ def test_duplicate_name(write_doc, good_doc, good_plugin):
     errors = validate(plugins_path=write_doc(doc), schema_path=SCHEMA_JSON)
     name_dups = [e for e in errors if "uniqueness" in e.location and "name" in e.message]
     assert len(name_dups) == 1
-    assert "nitekeeper-atelier" in name_dups[0].message
+    assert "atelier" in name_dups[0].message
 
 
 def test_duplicate_repository_url(write_doc, good_doc, good_plugin):
     doc = copy.deepcopy(good_doc)
     dup = copy.deepcopy(good_plugin)
-    dup["name"] = "nitekeeper-other"
+    dup["name"] = "other"
     doc["plugins"].append(dup)
     errors = validate(plugins_path=write_doc(doc), schema_path=SCHEMA_JSON)
     url_dups = [e for e in errors if "uniqueness" in e.location and "repository_url" in e.message]

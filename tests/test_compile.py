@@ -28,7 +28,7 @@ def _base_marketplace() -> dict:
 
 def _full_plugin() -> dict:
     return {
-        "name": "nitekeeper-atelier",
+        "name": "atelier",
         "repository_url": "https://github.com/nitekeeper/atelier.git",
         "current_version": "v1.0.0",
         "current_sha": "abc1230000000000000000000000000000000000",
@@ -69,7 +69,7 @@ def test_compile_full_plugin_maps_source_and_passthroughs() -> None:
     out = compile_marketplace(data)
     assert len(out["plugins"]) == 1
     p = out["plugins"][0]
-    assert p["name"] == "nitekeeper-atelier"
+    assert p["name"] == "atelier"
     assert p["description"] == "Shared workspace methodology"
     assert p["source"] == {
         "source": "url",

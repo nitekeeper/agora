@@ -19,7 +19,7 @@ SAMPLE_PLUGINS = {
     },
     "plugins": [
         {
-            "name": "nitekeeper-atelier",
+            "name": "atelier",
             "repository_url": "https://github.com/nitekeeper/atelier.git",
             "current_version": "v1.0.0",
             "current_sha": "abc1230000000000000000000000000000000000",
@@ -28,7 +28,7 @@ SAMPLE_PLUGINS = {
             "category": "development",
         },
         {
-            "name": "nitekeeper-memex",
+            "name": "memex",
             "repository_url": "https://github.com/nitekeeper/memex.git",
             "current_version": "v0.3.1",
             "current_sha": "def4560000000000000000000000000000000000",
@@ -78,18 +78,18 @@ def test_happy_path_with_yes(tmp_path: Path, monkeypatch, capsys) -> None:
         tmp_path, monkeypatch, SAMPLE_PLUGINS
     )
 
-    rc = plugin_unregister.main(["nitekeeper-atelier", "--yes"])
+    rc = plugin_unregister.main(["atelier", "--yes"])
     captured = capsys.readouterr()
 
     assert rc == 0
     data = json.loads(plugins_path.read_text(encoding="utf-8"))
     names = [p["name"] for p in data["plugins"]]
-    assert names == ["nitekeeper-memex"]
+    assert names == ["memex"]
 
     market = json.loads(marketplace_path.read_text(encoding="utf-8"))
     market_names = [p["name"] for p in market["plugins"]]
-    assert market_names == ["nitekeeper-memex"]
-    assert "Removed plugin 'nitekeeper-atelier'." in captured.out
+    assert market_names == ["memex"]
+    assert "Removed plugin 'atelier'." in captured.out
 
 
 # --------------------------------------------------------------------------- 2
@@ -111,13 +111,13 @@ def test_confirmation_accepted(tmp_path: Path, monkeypatch, capsys) -> None:
     plugins_path, _ = _setup_registry(tmp_path, monkeypatch, SAMPLE_PLUGINS)
     monkeypatch.setattr("builtins.input", lambda *_args, **_kw: "y")
 
-    rc = plugin_unregister.main(["nitekeeper-atelier"])
+    rc = plugin_unregister.main(["atelier"])
     captured = capsys.readouterr()
 
     assert rc == 0
     data = json.loads(plugins_path.read_text(encoding="utf-8"))
-    assert [p["name"] for p in data["plugins"]] == ["nitekeeper-memex"]
-    assert "Removed plugin 'nitekeeper-atelier'." in captured.out
+    assert [p["name"] for p in data["plugins"]] == ["memex"]
+    assert "Removed plugin 'atelier'." in captured.out
 
 
 # --------------------------------------------------------------------------- 4
@@ -125,7 +125,7 @@ def test_confirmation_declined(tmp_path: Path, monkeypatch, capsys) -> None:
     plugins_path, _ = _setup_registry(tmp_path, monkeypatch, SAMPLE_PLUGINS)
     monkeypatch.setattr("builtins.input", lambda *_args, **_kw: "")
 
-    rc = plugin_unregister.main(["nitekeeper-atelier"])
+    rc = plugin_unregister.main(["atelier"])
     captured = capsys.readouterr()
 
     assert rc == 0
@@ -133,8 +133,8 @@ def test_confirmation_declined(tmp_path: Path, monkeypatch, capsys) -> None:
     # plugins.json unchanged
     data = json.loads(plugins_path.read_text(encoding="utf-8"))
     assert [p["name"] for p in data["plugins"]] == [
-        "nitekeeper-atelier",
-        "nitekeeper-memex",
+        "atelier",
+        "memex",
     ]
 
 
@@ -144,7 +144,7 @@ def test_multiple_plugins_only_target_removed(
 ) -> None:
     data = json.loads(json.dumps(SAMPLE_PLUGINS))
     data["plugins"].append({
-        "name": "nitekeeper-agora",
+        "name": "agora",
         "repository_url": "https://github.com/nitekeeper/agora.git",
         "current_version": "v0.1.0",
         "current_sha": "0123450000000000000000000000000000000000",
@@ -154,15 +154,15 @@ def test_multiple_plugins_only_target_removed(
     })
     plugins_path, _ = _setup_registry(tmp_path, monkeypatch, data)
 
-    rc = plugin_unregister.main(["nitekeeper-memex", "--yes"])
+    rc = plugin_unregister.main(["memex", "--yes"])
     assert rc == 0
 
     updated = json.loads(plugins_path.read_text(encoding="utf-8"))
     names = [p["name"] for p in updated["plugins"]]
     # Order preserved, only memex removed.
-    assert names == ["nitekeeper-atelier", "nitekeeper-agora"]
+    assert names == ["atelier", "agora"]
     # Other entries untouched (deep equality on the surviving fields).
-    atelier = next(p for p in updated["plugins"] if p["name"] == "nitekeeper-atelier")
+    atelier = next(p for p in updated["plugins"] if p["name"] == "atelier")
     assert atelier["current_sha"] == "abc1230000000000000000000000000000000000"
     assert atelier["license"] == "MIT"
 
@@ -171,13 +171,13 @@ def test_multiple_plugins_only_target_removed(
 def test_marketplace_reflects_removal(tmp_path: Path, monkeypatch) -> None:
     _, marketplace_path = _setup_registry(tmp_path, monkeypatch, SAMPLE_PLUGINS)
 
-    rc = plugin_unregister.main(["nitekeeper-memex", "--yes"])
+    rc = plugin_unregister.main(["memex", "--yes"])
     assert rc == 0
 
     market = json.loads(marketplace_path.read_text(encoding="utf-8"))
     market_names = [p["name"] for p in market["plugins"]]
-    assert "nitekeeper-memex" not in market_names
-    assert market_names == ["nitekeeper-atelier"]
+    assert "memex" not in market_names
+    assert market_names == ["atelier"]
     # Marketplace shape: source object present, license stripped.
     entry = market["plugins"][0]
     assert "source" in entry

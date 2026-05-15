@@ -19,7 +19,7 @@ SAMPLE_PLUGINS = {
     },
     "plugins": [
         {
-            "name": "nitekeeper-atelier",
+            "name": "atelier",
             "repository_url": "https://github.com/nitekeeper/atelier.git",
             "current_version": "v1.0.0",
             "current_sha": "abc123",
@@ -28,7 +28,7 @@ SAMPLE_PLUGINS = {
             "category": "development",
         },
         {
-            "name": "nitekeeper-memex",
+            "name": "memex",
             "repository_url": "https://github.com/nitekeeper/memex.git",
             "current_version": "v0.3.1",
             "current_sha": "def456",
@@ -82,11 +82,11 @@ def test_default_two_plugins(tmp_path: Path, monkeypatch, capsys) -> None:
     assert "LICENSE" in out
     assert "CATEGORY" in out
     # Both rows
-    assert "nitekeeper-atelier" in out
+    assert "atelier" in out
     assert "v1.0.0" in out
     assert "MIT" in out
     assert "development" in out
-    assert "nitekeeper-memex" in out
+    assert "memex" in out
     assert "Apache-2.0" in out
     assert "productivity" in out
 
@@ -121,8 +121,8 @@ def test_json_mode(tmp_path: Path, monkeypatch, capsys) -> None:
     parsed = json.loads(out)
     assert isinstance(parsed, list)
     assert len(parsed) == 2
-    assert parsed[0]["name"] == "nitekeeper-atelier"
-    assert parsed[1]["name"] == "nitekeeper-memex"
+    assert parsed[0]["name"] == "atelier"
+    assert parsed[1]["name"] == "memex"
     # Should NOT have check augmentation keys
     assert "status" not in parsed[0]
 
@@ -143,11 +143,11 @@ def test_check_with_populated_cache(tmp_path: Path, monkeypatch, capsys) -> None
     cache_path = _write_cache(tmp_path, {
         "fetched_at": "2026-05-15T19:00:00Z",
         "plugins": {
-            "nitekeeper-atelier": {
+            "atelier": {
                 "latest_version": "v1.3.0",
                 "checked_at": "2026-05-15T18:55:00Z",
             },
-            "nitekeeper-memex": {
+            "memex": {
                 "latest_version": "v0.3.1",
                 "checked_at": "2026-05-15T18:55:00Z",
             },
@@ -168,11 +168,11 @@ def test_check_with_populated_cache(tmp_path: Path, monkeypatch, capsys) -> None
     assert "LATEST" in out
     assert "STATUS" in out
     # atelier: outdated
-    atelier_line = next(l for l in out.splitlines() if "nitekeeper-atelier" in l)
+    atelier_line = next(l for l in out.splitlines() if "atelier" in l)
     assert "v1.3.0" in atelier_line
     assert "outdated" in atelier_line
     # memex: up-to-date
-    memex_line = next(l for l in out.splitlines() if "nitekeeper-memex" in l)
+    memex_line = next(l for l in out.splitlines() if "memex" in l)
     assert "v0.3.1" in memex_line
     assert "up-to-date" in memex_line
 
@@ -185,7 +185,7 @@ def test_check_unknown_when_plugin_missing_from_cache(
     cache_path = _write_cache(tmp_path, {
         "fetched_at": "2026-05-15T19:00:00Z",
         "plugins": {
-            "nitekeeper-atelier": {
+            "atelier": {
                 "latest_version": "v1.0.0",
                 "checked_at": "2026-05-15T18:55:00Z",
             },
@@ -201,9 +201,9 @@ def test_check_unknown_when_plugin_missing_from_cache(
     )
     out = capsys.readouterr().out
 
-    atelier_line = next(l for l in out.splitlines() if "nitekeeper-atelier" in l)
+    atelier_line = next(l for l in out.splitlines() if "atelier" in l)
     assert "up-to-date" in atelier_line
-    memex_line = next(l for l in out.splitlines() if "nitekeeper-memex" in l)
+    memex_line = next(l for l in out.splitlines() if "memex" in l)
     assert "unknown" in memex_line
 
 
@@ -239,7 +239,7 @@ def test_check_json_includes_latest_and_status(
     cache_path = _write_cache(tmp_path, {
         "fetched_at": "2026-05-15T19:00:00Z",
         "plugins": {
-            "nitekeeper-atelier": {
+            "atelier": {
                 "latest_version": "v1.3.0",
                 "checked_at": "2026-05-15T18:55:00Z",
             },
@@ -258,8 +258,8 @@ def test_check_json_includes_latest_and_status(
     assert rc == 0
     parsed = json.loads(out)
     assert len(parsed) == 2
-    atelier = next(p for p in parsed if p["name"] == "nitekeeper-atelier")
-    memex = next(p for p in parsed if p["name"] == "nitekeeper-memex")
+    atelier = next(p for p in parsed if p["name"] == "atelier")
+    memex = next(p for p in parsed if p["name"] == "memex")
     assert atelier["latest_version"] == "v1.3.0"
     assert atelier["status"] == "outdated"
     assert memex["status"] == "unknown"
@@ -324,7 +324,7 @@ def test_outdated_alias(tmp_path: Path, monkeypatch, capsys) -> None:
     cache_path = _write_cache(tmp_path, {
         "fetched_at": "2026-05-15T19:00:00Z",
         "plugins": {
-            "nitekeeper-atelier": {
+            "atelier": {
                 "latest_version": "v1.3.0",
                 "checked_at": "2026-05-15T18:55:00Z",
             },

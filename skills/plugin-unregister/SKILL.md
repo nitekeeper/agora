@@ -1,5 +1,5 @@
 ---
-name: agora-plugin-unregister
+name: agora:plugin-unregister
 description: Use when removing a plugin entry from the agora marketplace registry. Consumers who already installed the plugin keep their cache until they uninstall via Claude Code's /plugins UI.
 ---
 

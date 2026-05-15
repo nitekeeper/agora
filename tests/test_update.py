@@ -27,7 +27,7 @@ def _base_data() -> dict:
         },
         "plugins": [
             {
-                "name": "nitekeeper-atelier",
+                "name": "atelier",
                 "repository_url": "https://github.com/nitekeeper/atelier.git",
                 "current_version": "v1.0.0",
                 "current_sha": SHA_ATELIER_OLD,
@@ -36,7 +36,7 @@ def _base_data() -> dict:
                 "updated_at": "2026-05-01T00:00:00Z",
             },
             {
-                "name": "nitekeeper-memex",
+                "name": "memex",
                 "repository_url": "https://github.com/nitekeeper/memex.git",
                 "current_version": "v0.3.1",
                 "current_sha": SHA_MEMEX,
@@ -115,20 +115,20 @@ def test_single_plugin_newer_tag_updates(patched_paths, monkeypatch, capsys):
         },
     })
 
-    rc = update.main(["nitekeeper-atelier"])
+    rc = update.main(["atelier"])
     assert rc == 0
 
     out = capsys.readouterr().out
-    assert "nitekeeper-atelier: v1.0.0 -> v1.3.0" in out
+    assert "atelier: v1.0.0 -> v1.3.0" in out
     assert "Updated 1 plugin(s)." in out
 
     plugins = json.loads(plugins_path.read_text(encoding="utf-8"))
-    atelier = next(p for p in plugins["plugins"] if p["name"] == "nitekeeper-atelier")
+    atelier = next(p for p in plugins["plugins"] if p["name"] == "atelier")
     assert atelier["current_version"] == "v1.3.0"
     assert atelier["current_sha"] == SHA_ATELIER_NEW
 
     marketplace = json.loads(marketplace_path.read_text(encoding="utf-8"))
-    mp_atelier = next(p for p in marketplace["plugins"] if p["name"] == "nitekeeper-atelier")
+    mp_atelier = next(p for p in marketplace["plugins"] if p["name"] == "atelier")
     assert mp_atelier["source"]["ref"] == "v1.3.0"
     assert mp_atelier["source"]["sha"] == SHA_ATELIER_NEW
 
@@ -143,7 +143,7 @@ def test_single_plugin_up_to_date(patched_paths, monkeypatch, capsys):
     })
 
     before = plugins_path.read_text(encoding="utf-8")
-    rc = update.main(["nitekeeper-atelier"])
+    rc = update.main(["atelier"])
     assert rc == 0
 
     out = capsys.readouterr().out
@@ -161,7 +161,7 @@ def test_all_mixed_states(patched_paths, monkeypatch, capsys):
     # Add a third plugin that will hit a network error.
     data = json.loads(plugins_path.read_text(encoding="utf-8"))
     data["plugins"].append({
-        "name": "nitekeeper-foo",
+        "name": "foo",
         "repository_url": "https://github.com/nitekeeper/foo.git",
         "current_version": "v0.1.0",
         "current_sha": "e" * 40,
@@ -186,16 +186,16 @@ def test_all_mixed_states(patched_paths, monkeypatch, capsys):
     assert rc == 0
 
     cap = capsys.readouterr()
-    assert "nitekeeper-atelier: v1.0.0 -> v1.3.0" in cap.out
-    assert "nitekeeper-memex: up to date (v0.3.1)" in cap.out
-    assert "nitekeeper-foo: error" in cap.out
-    assert "nitekeeper-foo: network down" in cap.err
+    assert "atelier: v1.0.0 -> v1.3.0" in cap.out
+    assert "memex: up to date (v0.3.1)" in cap.out
+    assert "foo: error" in cap.out
+    assert "foo: network down" in cap.err
     assert "Updated 1 plugin(s)." in cap.out
 
     plugins = json.loads(plugins_path.read_text(encoding="utf-8"))
-    atelier = next(p for p in plugins["plugins"] if p["name"] == "nitekeeper-atelier")
-    memex = next(p for p in plugins["plugins"] if p["name"] == "nitekeeper-memex")
-    foo = next(p for p in plugins["plugins"] if p["name"] == "nitekeeper-foo")
+    atelier = next(p for p in plugins["plugins"] if p["name"] == "atelier")
+    memex = next(p for p in plugins["plugins"] if p["name"] == "memex")
+    foo = next(p for p in plugins["plugins"] if p["name"] == "foo")
     assert atelier["current_version"] == "v1.3.0"
     assert memex["current_version"] == "v0.3.1"
     assert foo["current_version"] == "v0.1.0"
@@ -225,11 +225,11 @@ def test_dry_run_no_write(patched_paths, monkeypatch, capsys):
     })
     before = plugins_path.read_text(encoding="utf-8")
 
-    rc = update.main(["nitekeeper-atelier", "--dry-run"])
+    rc = update.main(["atelier", "--dry-run"])
     assert rc == 0
     out = capsys.readouterr().out
     assert "would be updated" in out
-    assert "nitekeeper-atelier: v1.0.0 -> v1.3.0" in out
+    assert "atelier: v1.0.0 -> v1.3.0" in out
 
     # plugins.json untouched, marketplace.json not written.
     assert plugins_path.read_text(encoding="utf-8") == before
@@ -247,19 +247,19 @@ def test_include_prerelease(patched_paths, monkeypatch, capsys):
     })
 
     # Without flag: stable v1.0.0 is the latest, no update.
-    rc = update.main(["nitekeeper-atelier"])
+    rc = update.main(["atelier"])
     assert rc == 0
     out = capsys.readouterr().out
     assert "up to date" in out
 
     # With flag: prerelease wins, update happens.
-    rc = update.main(["nitekeeper-atelier", "--include-prerelease"])
+    rc = update.main(["atelier", "--include-prerelease"])
     assert rc == 0
     out = capsys.readouterr().out
     assert "v1.0.0 -> v1.1.0-rc.1" in out
 
     plugins = json.loads(plugins_path.read_text(encoding="utf-8"))
-    atelier = next(p for p in plugins["plugins"] if p["name"] == "nitekeeper-atelier")
+    atelier = next(p for p in plugins["plugins"] if p["name"] == "atelier")
     assert atelier["current_version"] == "v1.1.0-rc.1"
     assert atelier["current_sha"] == SHA_FOO_PRERELEASE
 
@@ -294,12 +294,12 @@ def test_all_batch_continues_on_network_failure(patched_paths, monkeypatch, caps
     rc = update.main(["--all"])
     assert rc == 0
     cap = capsys.readouterr()
-    assert "nitekeeper-atelier: ls-remote failed" in cap.err
-    assert "nitekeeper-atelier: error" in cap.out
-    assert "nitekeeper-memex: v0.3.1 -> v0.4.0" in cap.out
+    assert "atelier: ls-remote failed" in cap.err
+    assert "atelier: error" in cap.out
+    assert "memex: v0.3.1 -> v0.4.0" in cap.out
 
     plugins = json.loads(plugins_path.read_text(encoding="utf-8"))
-    memex = next(p for p in plugins["plugins"] if p["name"] == "nitekeeper-memex")
+    memex = next(p for p in plugins["plugins"] if p["name"] == "memex")
     assert memex["current_version"] == "v0.4.0"
 
 
@@ -317,8 +317,8 @@ def test_updated_at_bumped_only_on_change(patched_paths, monkeypatch, capsys):
     })
 
     before = json.loads(plugins_path.read_text(encoding="utf-8"))
-    atelier_before = next(p for p in before["plugins"] if p["name"] == "nitekeeper-atelier")
-    memex_before = next(p for p in before["plugins"] if p["name"] == "nitekeeper-memex")
+    atelier_before = next(p for p in before["plugins"] if p["name"] == "atelier")
+    memex_before = next(p for p in before["plugins"] if p["name"] == "memex")
     atelier_updated_before = atelier_before["updated_at"]
     memex_updated_before = memex_before["updated_at"]
 
@@ -326,8 +326,8 @@ def test_updated_at_bumped_only_on_change(patched_paths, monkeypatch, capsys):
     assert rc == 0
 
     after = json.loads(plugins_path.read_text(encoding="utf-8"))
-    atelier_after = next(p for p in after["plugins"] if p["name"] == "nitekeeper-atelier")
-    memex_after = next(p for p in after["plugins"] if p["name"] == "nitekeeper-memex")
+    atelier_after = next(p for p in after["plugins"] if p["name"] == "atelier")
+    memex_after = next(p for p in after["plugins"] if p["name"] == "memex")
 
     assert atelier_after["updated_at"] != atelier_updated_before
     assert memex_after["updated_at"] == memex_updated_before
@@ -345,15 +345,15 @@ def test_registered_at_preserved(patched_paths, monkeypatch, capsys):
 
     before = json.loads(plugins_path.read_text(encoding="utf-8"))
     registered_before = next(
-        p for p in before["plugins"] if p["name"] == "nitekeeper-atelier"
+        p for p in before["plugins"] if p["name"] == "atelier"
     )["registered_at"]
 
-    rc = update.main(["nitekeeper-atelier"])
+    rc = update.main(["atelier"])
     assert rc == 0
 
     after = json.loads(plugins_path.read_text(encoding="utf-8"))
     registered_after = next(
-        p for p in after["plugins"] if p["name"] == "nitekeeper-atelier"
+        p for p in after["plugins"] if p["name"] == "atelier"
     )["registered_at"]
     assert registered_after == registered_before
 
@@ -368,17 +368,17 @@ def test_marketplace_reflects_new_ref_and_sha(patched_paths, monkeypatch, capsys
         },
     })
 
-    rc = update.main(["nitekeeper-atelier"])
+    rc = update.main(["atelier"])
     assert rc == 0
 
     marketplace = json.loads(marketplace_path.read_text(encoding="utf-8"))
     mp_atelier = next(
-        p for p in marketplace["plugins"] if p["name"] == "nitekeeper-atelier"
+        p for p in marketplace["plugins"] if p["name"] == "atelier"
     )
     assert mp_atelier["source"]["ref"] == "v2.0.0"
     assert mp_atelier["source"]["sha"] == SHA_ATELIER_NEW
     # And the plugins.json source-of-truth matches.
     plugins = json.loads(plugins_path.read_text(encoding="utf-8"))
-    atelier = next(p for p in plugins["plugins"] if p["name"] == "nitekeeper-atelier")
+    atelier = next(p for p in plugins["plugins"] if p["name"] == "atelier")
     assert atelier["current_version"] == "v2.0.0"
     assert atelier["current_sha"] == SHA_ATELIER_NEW

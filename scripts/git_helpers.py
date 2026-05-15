@@ -31,9 +31,12 @@ def parse_github_url(url: str) -> tuple[str, str]:
 
 
 def plugin_name_from_url(url: str) -> str:
-    """Derive the agora plugin name '<owner>-<repo>' from a GitHub URL."""
-    owner, repo = parse_github_url(url)
-    return f"{owner.lower()}-{repo.lower()}"
+    """Derive the agora plugin name from a GitHub URL — uses bare repo name
+    (lowercase, .git stripped). Note: this means two plugins from different
+    owners but the same repo name would collide; the agora marketplace is
+    currently single-owner so this is acceptable."""
+    _, repo = parse_github_url(url)
+    return repo.lower()
 
 
 def _run(cmd: list[str], timeout: int = _DEFAULT_TIMEOUT) -> subprocess.CompletedProcess:

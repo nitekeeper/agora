@@ -19,7 +19,7 @@ SAMPLE_REGISTRY = {
     },
     "plugins": [
         {
-            "name": "nitekeeper-atelier",
+            "name": "atelier",
             "repository_url": "https://github.com/nitekeeper/atelier.git",
             "current_version": "v1.0.0",
             "current_sha": "a" * 40,
@@ -28,7 +28,7 @@ SAMPLE_REGISTRY = {
             "category": "development",
         },
         {
-            "name": "nitekeeper-memex",
+            "name": "memex",
             "repository_url": "https://github.com/nitekeeper/memex.git",
             "current_version": "v0.3.1",
             "current_sha": "b" * 40,
@@ -93,20 +93,20 @@ def test_happy_path_two_plugins(tmp_paths, monkeypatch, capsys):
     data = json.loads(cache_json.read_text(encoding="utf-8"))
     assert "fetched_at" in data
     assert data["include_prerelease"] is False
-    assert set(data["plugins"].keys()) == {"nitekeeper-atelier", "nitekeeper-memex"}
+    assert set(data["plugins"].keys()) == {"atelier", "memex"}
 
-    atelier = data["plugins"]["nitekeeper-atelier"]
+    atelier = data["plugins"]["atelier"]
     assert atelier["latest_version"] == "v1.3.0"
     assert "checked_at" in atelier
     assert "error" not in atelier
 
-    memex = data["plugins"]["nitekeeper-memex"]
+    memex = data["plugins"]["memex"]
     assert memex["latest_version"] == "v0.3.1"
     assert "checked_at" in memex
 
     out = capsys.readouterr().out
-    assert "nitekeeper-atelier: v1.3.0" in out
-    assert "nitekeeper-memex: v0.3.1" in out
+    assert "atelier: v1.3.0" in out
+    assert "memex: v0.3.1" in out
     # atelier is outdated, memex is up-to-date; no errors.
     assert "Checked 2 plugin(s) — 1 outdated, 0 errors." in out
 
@@ -139,17 +139,17 @@ def test_one_plugin_errors(tmp_paths, monkeypatch, capsys):
     assert rc == 0
 
     data = json.loads(cache_json.read_text(encoding="utf-8"))
-    atelier = data["plugins"]["nitekeeper-atelier"]
+    atelier = data["plugins"]["atelier"]
     assert atelier["latest_version"] == "v1.0.0"
     assert "error" not in atelier
 
-    memex = data["plugins"]["nitekeeper-memex"]
+    memex = data["plugins"]["memex"]
     assert memex["latest_version"] is None
     assert "git ls-remote failed" in memex["error"]
     assert "checked_at" in memex
 
     out = capsys.readouterr().out
-    assert "nitekeeper-memex: ERROR" in out
+    assert "memex: ERROR" in out
     assert "Checked 2 plugin(s) — 0 outdated, 1 errors." in out
 
 
@@ -211,8 +211,8 @@ def test_ttl_stale_refreshes(tmp_paths, monkeypatch, capsys):
     assert rc == 0
 
     data = json.loads(cache_json.read_text(encoding="utf-8"))
-    assert data["plugins"]["nitekeeper-atelier"]["latest_version"] == "v2.0.0"
-    assert data["plugins"]["nitekeeper-memex"]["latest_version"] == "v0.4.0"
+    assert data["plugins"]["atelier"]["latest_version"] == "v2.0.0"
+    assert data["plugins"]["memex"]["latest_version"] == "v0.4.0"
 
 
 # --------------------------------------------------------------------------- 6
@@ -239,7 +239,7 @@ def test_force_ignores_ttl(tmp_paths, monkeypatch, capsys):
     assert rc == 0
 
     data = json.loads(cache_json.read_text(encoding="utf-8"))
-    assert data["plugins"]["nitekeeper-atelier"]["latest_version"] == "v9.9.9"
+    assert data["plugins"]["atelier"]["latest_version"] == "v9.9.9"
 
 
 # --------------------------------------------------------------------------- 7
@@ -250,7 +250,7 @@ def test_include_prerelease(tmp_paths, monkeypatch, capsys):
         "marketplace": {"name": "agora", "owner": {"name": "nitekeeper"}},
         "plugins": [
             {
-                "name": "nitekeeper-atelier",
+                "name": "atelier",
                 "repository_url": "https://github.com/nitekeeper/atelier.git",
                 "current_version": "v1.0.0",
                 "current_sha": "a" * 40,
@@ -272,14 +272,14 @@ def test_include_prerelease(tmp_paths, monkeypatch, capsys):
     rc = check.main([])
     assert rc == 0
     data = json.loads(cache_json.read_text(encoding="utf-8"))
-    assert data["plugins"]["nitekeeper-atelier"]["latest_version"] == "v1.0.0"
+    assert data["plugins"]["atelier"]["latest_version"] == "v1.0.0"
     assert data["include_prerelease"] is False
 
     # With flag (use --force since cache is fresh now).
     rc = check.main(["--include-prerelease", "--force"])
     assert rc == 0
     data = json.loads(cache_json.read_text(encoding="utf-8"))
-    assert data["plugins"]["nitekeeper-atelier"]["latest_version"] == "v2.0.0-rc1"
+    assert data["plugins"]["atelier"]["latest_version"] == "v2.0.0-rc1"
     assert data["include_prerelease"] is True
 
 
@@ -299,11 +299,11 @@ def test_json_mode(tmp_paths, monkeypatch, capsys):
     parsed = json.loads(out)
     assert "fetched_at" in parsed
     assert parsed["include_prerelease"] is False
-    assert parsed["plugins"]["nitekeeper-atelier"]["latest_version"] == "v1.3.0"
+    assert parsed["plugins"]["atelier"]["latest_version"] == "v1.3.0"
 
     # Cache file still written.
     on_disk = json.loads(cache_json.read_text(encoding="utf-8"))
-    assert on_disk["plugins"]["nitekeeper-atelier"]["latest_version"] == "v1.3.0"
+    assert on_disk["plugins"]["atelier"]["latest_version"] == "v1.3.0"
 
 
 # --------------------------------------------------------------------------- 9
@@ -313,7 +313,7 @@ def test_no_tags_plugin(tmp_paths, monkeypatch, capsys):
         "marketplace": {"name": "agora", "owner": {"name": "nitekeeper"}},
         "plugins": [
             {
-                "name": "nitekeeper-empty",
+                "name": "empty",
                 "repository_url": "https://github.com/nitekeeper/empty.git",
                 "current_version": "v0.0.0",
                 "current_sha": "0" * 40,
@@ -332,7 +332,7 @@ def test_no_tags_plugin(tmp_paths, monkeypatch, capsys):
     assert rc == 0
 
     data = json.loads(cache_json.read_text(encoding="utf-8"))
-    entry = data["plugins"]["nitekeeper-empty"]
+    entry = data["plugins"]["empty"]
     assert entry["latest_version"] is None
     assert "error" not in entry
     assert "checked_at" in entry
