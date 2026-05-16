@@ -11,8 +11,8 @@
     {
       "name": "atelier",
       "repository_url": "https://github.com/nitekeeper/atelier.git",
-      "current_version": "v1.0.3",
-      "current_sha": "b869b49c5a66fc80a90bd985751417c1c8cb6b8f",
+      "current_version": "v1.0.4",
+      "current_sha": "00cc1e8f11d095757bd81468c31d1d1e3b7191db",
       "description": "Shared workspace methodology and dev workflow for human-AI development teams",
       "license": "MIT",
       "author": {
@@ -20,13 +20,13 @@
       },
       "homepage": "https://github.com/nitekeeper/atelier",
       "registered_at": "2026-05-15T23:40:52.358955Z",
-      "updated_at": "2026-05-15T23:40:52.358955Z"
+      "updated_at": "2026-05-16T00:11:10Z"
     },
     {
       "name": "memex",
       "repository_url": "https://github.com/nitekeeper/memex.git",
-      "current_version": "v1.0.2",
-      "current_sha": "e91abd2d70bc145b747e4474fb8687367333f30b",
+      "current_version": "v1.0.3",
+      "current_sha": "c94668a085ec468847ec0aa3205d251f44e45e7c",
       "description": "Persistent context, knowledge wiki, and ask-anything memory for Claude Code sessions",
       "license": "MIT",
       "author": {
@@ -34,13 +34,13 @@
       },
       "homepage": "https://github.com/nitekeeper/memex",
       "registered_at": "2026-05-15T23:40:55.313432Z",
-      "updated_at": "2026-05-15T23:40:55.313432Z"
+      "updated_at": "2026-05-16T00:11:11Z"
     },
     {
       "name": "agora",
       "repository_url": "https://github.com/nitekeeper/agora.git",
-      "current_version": "v0.1.1",
-      "current_sha": "9bca507f635c9411908c6c062a47a9a81bd2aae9",
+      "current_version": "v0.1.2",
+      "current_sha": "bf1d1fd811fe11fea8582df8f6347a64e55030e2",
       "description": "Custom Claude Code plugin marketplace. Curated index of plugin pointers with versioned releases.",
       "license": "MIT",
       "author": {
@@ -48,7 +48,7 @@
       },
       "homepage": "https://github.com/nitekeeper/agora",
       "registered_at": "2026-05-15T23:40:58.174074Z",
-      "updated_at": "2026-05-15T23:40:58.174074Z"
+      "updated_at": "2026-05-16T00:11:12Z"
     }
   ]
 }
