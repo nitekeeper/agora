@@ -1,0 +1,52 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "agora",
+  "description": "Custom Claude Code plugin marketplace",
+  "owner": {
+    "name": "nitekeeper"
+  },
+  "plugins": [
+    {
+      "name": "atelier",
+      "description": "Shared workspace methodology and dev workflow for human-AI development teams",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/nitekeeper/atelier.git",
+        "ref": "v1.0.13",
+        "sha": "92fedf140454dc35aaa053c4a7df4ac0608a248b"
+      },
+      "author": {
+        "name": "nitekeeper"
+      },
+      "homepage": "https://github.com/nitekeeper/atelier"
+    },
+    {
+      "name": "memex",
+      "description": "Persistent context, knowledge wiki, and ask-anything memory for Claude Code sessions",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/nitekeeper/memex.git",
+        "ref": "v2.0.0",
+        "sha": "cff63df71cc940e968b354e53a4d9722d55445ff"
+      },
+      "author": {
+        "name": "nitekeeper"
+      },
+      "homepage": "https://github.com/nitekeeper/memex"
+    },
+    {
+      "name": "agora",
+      "description": "Custom Claude Code plugin marketplace. Curated index of plugin pointers with versioned releases.",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/nitekeeper/agora.git",
+        "ref": "v0.2.2",
+        "sha": "8152512e432d24fca63be5494b16ac6f0b284f3b"
+      },
+      "author": {
+        "name": "nitekeeper"
+      },
+      "homepage": "https://github.com/nitekeeper/agora"
+    }
+  ]
+}
