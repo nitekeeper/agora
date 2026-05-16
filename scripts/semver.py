@@ -74,7 +74,10 @@ def _cmp_ident(a: str | int, b: str | int) -> int:
 
 
 def _cmp_prerelease(a: tuple[str | int, ...], b: tuple[str | int, ...]) -> int:
-    for ai, bi in zip(a, b):
+    # strict=False is intentional: per semver, shorter prereleases are "less
+    # than" longer ones with the same prefix (1.0.0-alpha < 1.0.0-alpha.1).
+    # The length-based comparison below handles the leftover identifiers.
+    for ai, bi in zip(a, b, strict=False):
         c = _cmp_ident(ai, bi)
         if c != 0:
             return c

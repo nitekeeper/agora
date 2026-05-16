@@ -163,7 +163,6 @@ def test_already_correct_state_no_changes(tmp_path: Path, monkeypatch, capsys) -
 
     monkeypatch.setattr("builtins.input", _no_input)
 
-    pre_mtime = settings_path.stat().st_mtime_ns
     pre_size = settings_path.stat().st_size
 
     rc = agora_setup.run_setup(yes=False)

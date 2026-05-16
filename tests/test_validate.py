@@ -167,9 +167,9 @@ def test_multiple_errors(write_doc, good_doc):
     errors = validate(plugins_path=write_doc(doc), schema_path=SCHEMA_JSON)
     assert len(errors) == 3
     locs = {e.location for e in errors}
-    assert any("current_version" in l for l in locs)
-    assert any("current_sha" in l for l in locs)
-    assert any("license" in l for l in locs)
+    assert any("current_version" in line for line in locs)
+    assert any("current_sha" in line for line in locs)
+    assert any("license" in line for line in locs)
 
 
 # ---------- file errors ----------

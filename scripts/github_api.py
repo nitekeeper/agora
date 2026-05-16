@@ -163,7 +163,10 @@ def _do_request(req: urllib.request.Request) -> tuple[int, dict, object]:
     """Perform a single HTTP request. Returns (status, payload, headers).
     Does not raise on HTTP errors — only on network errors."""
     try:
-        resp = urllib.request.urlopen(req, timeout=_TIMEOUT_SECS, context=_SSL_CONTEXT)
+        # nosec B310 - URL scheme is constrained: _API_BASE is hardcoded to
+        # https://api.github.com and all callers concatenate paths onto it,
+        # so file:// or other schemes cannot reach this call.
+        resp = urllib.request.urlopen(req, timeout=_TIMEOUT_SECS, context=_SSL_CONTEXT)  # nosec B310
     except urllib.error.HTTPError as e:
         status = e.code
         headers = e.headers

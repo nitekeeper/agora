@@ -8,6 +8,7 @@ holds the destination open; we retry with exponential backoff.
 
 from __future__ import annotations
 
+import contextlib
 import os
 import tempfile
 import time
@@ -32,7 +33,10 @@ def _write_tmp(target: Path, content: str | bytes) -> Path:
     else:
         mode = "w"
         kwargs = {"encoding": "utf-8", "newline": ""}
-    fd = tempfile.NamedTemporaryFile(
+    # delete=False is intentional: the caller renames the tempfile to its
+    # final destination atomically (via os.replace), so a context manager
+    # auto-cleanup would defeat the whole point.
+    fd = tempfile.NamedTemporaryFile(  # noqa: SIM115 - see comment above
         mode=mode,
         delete=False,
         dir=str(target.parent),
@@ -45,10 +49,8 @@ def _write_tmp(target: Path, content: str | bytes) -> Path:
             f.write(content)
         return Path(fd.name)
     except Exception:
-        try:
+        with contextlib.suppress(OSError):
             os.unlink(fd.name)
-        except OSError:
-            pass
         raise
 
 
@@ -72,10 +74,8 @@ def _cleanup(*paths: Path | None) -> None:
     for p in paths:
         if p is None:
             continue
-        try:
+        with contextlib.suppress(OSError):
             os.unlink(str(p))
-        except OSError:
-            pass
 
 
 def atomic_write(path: Path | str, content: str | bytes) -> None:

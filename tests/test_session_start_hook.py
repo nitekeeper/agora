@@ -60,7 +60,7 @@ def compile_spy(monkeypatch):
 
 def test_plugins_missing_is_noop(fake_paths, compile_spy):
     """If plugins.json doesn't exist, hook is a no-op."""
-    plugins, marketplace = fake_paths
+    plugins, _marketplace = fake_paths
     assert not plugins.exists()
 
     rc = session_start.main()
@@ -125,7 +125,7 @@ def test_equal_mtimes_is_noop(fake_paths, compile_spy):
 
 def test_compile_exception_is_swallowed(fake_paths, monkeypatch, capsys):
     """If compile_to_disk raises, hook prints to stderr and still returns 0."""
-    plugins, marketplace = fake_paths
+    plugins, _marketplace = fake_paths
     _touch(plugins)
 
     def boom(*args, **kwargs):
@@ -143,7 +143,7 @@ def test_compile_exception_is_swallowed(fake_paths, monkeypatch, capsys):
 
 def test_main_returns_zero_even_on_internal_failure(fake_paths, monkeypatch):
     """main() must always return 0, even if check_staleness blows up internally."""
-    plugins, marketplace = fake_paths
+    plugins, _marketplace = fake_paths
     _touch(plugins)
 
     # Force a failure deep inside check_staleness by making stat() raise.

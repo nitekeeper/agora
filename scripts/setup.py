@@ -46,17 +46,17 @@ def _load_settings() -> dict:
             f"could not read {settings_path}: {e}",
             file=sys.stderr,
         )
-        raise SystemExit(1)
+        raise SystemExit(1) from e
     if not raw.strip():
         return {}
     try:
         data = json.loads(raw)
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
         print(
             "~/.claude/settings.json is not valid JSON — fix manually before running setup",
             file=sys.stderr,
         )
-        raise SystemExit(1)
+        raise SystemExit(1) from e
     if not isinstance(data, dict):
         print(
             "~/.claude/settings.json is not valid JSON — fix manually before running setup",
@@ -146,10 +146,9 @@ def run_setup(yes: bool = False) -> int:
         for line in diff:
             print(line)
         print()
-        if not yes:
-            if not _confirm("Apply changes? [y/N]: "):
-                print("cancelled")
-                return 0
+        if not yes and not _confirm("Apply changes? [y/N]: "):
+            print("cancelled")
+            return 0
 
         backup = _backup_settings(settings_path)
         content = json.dumps(new_settings, indent=2) + "\n"

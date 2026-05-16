@@ -178,11 +178,11 @@ def test_check_with_populated_cache(tmp_path: Path, monkeypatch, capsys) -> None
     assert "LATEST" in out
     assert "STATUS" in out
     # atelier: outdated
-    atelier_line = next(l for l in out.splitlines() if "atelier" in l)
+    atelier_line = next(line for line in out.splitlines() if "atelier" in line)
     assert "v1.3.0" in atelier_line
     assert "outdated" in atelier_line
     # memex: up-to-date
-    memex_line = next(l for l in out.splitlines() if "memex" in l)
+    memex_line = next(line for line in out.splitlines() if "memex" in line)
     assert "v0.3.1" in memex_line
     assert "up-to-date" in memex_line
 
@@ -214,9 +214,9 @@ def test_check_unknown_when_plugin_missing_from_cache(tmp_path: Path, monkeypatc
     )
     out = capsys.readouterr().out
 
-    atelier_line = next(l for l in out.splitlines() if "atelier" in l)
+    atelier_line = next(line for line in out.splitlines() if "atelier" in line)
     assert "up-to-date" in atelier_line
-    memex_line = next(l for l in out.splitlines() if "memex" in l)
+    memex_line = next(line for line in out.splitlines() if "memex" in line)
     assert "unknown" in memex_line
 
 
@@ -242,8 +242,8 @@ def test_check_with_missing_cache_warns_and_marks_unknown(
     assert "cache not found" in captured.err
     assert "scripts/check.py" in captured.err
     # All rows marked unknown on stdout
-    out_lines = [l for l in captured.out.splitlines() if "nitekeeper" in l]
-    assert all("unknown" in l for l in out_lines)
+    out_lines = [line for line in captured.out.splitlines() if "nitekeeper" in line]
+    assert all("unknown" in line for line in out_lines)
 
 
 # --------------------------------------------------------------------------- 7
