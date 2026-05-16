@@ -39,8 +39,8 @@
     {
       "name": "agora",
       "repository_url": "https://github.com/nitekeeper/agora.git",
-      "current_version": "v0.1.2",
-      "current_sha": "bf1d1fd811fe11fea8582df8f6347a64e55030e2",
+      "current_version": "v0.2.0",
+      "current_sha": "ed7c123162e2828759007aa16a6370b85e347e08",
       "description": "Custom Claude Code plugin marketplace. Curated index of plugin pointers with versioned releases.",
       "license": "MIT",
       "author": {
@@ -48,7 +48,7 @@
       },
       "homepage": "https://github.com/nitekeeper/agora",
       "registered_at": "2026-05-15T23:40:58.174074Z",
-      "updated_at": "2026-05-16T00:11:12Z"
+      "updated_at": "2026-05-16T02:15:10Z"
     }
   ]
 }
