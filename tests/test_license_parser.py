@@ -1,11 +1,11 @@
 # tests/test_license_parser.py
 """Tests for scripts.license_parser."""
+
 from __future__ import annotations
 
 from pathlib import Path
 
 from scripts.license_parser import detect_spdx, detect_spdx_from_file
-
 
 MIT_SNIPPET = """MIT License
 

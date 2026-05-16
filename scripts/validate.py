@@ -11,6 +11,7 @@ Two layers:
 
 CLI exit codes: 0 = valid, 1 = invalid. `--json` controls output format only.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -153,7 +154,7 @@ def _parse_ls_remote(output: str) -> dict[str, str]:
         sha, ref = line.split("\t", 1)
         if not ref.startswith("refs/tags/"):
             continue
-        tag = ref[len("refs/tags/"):]
+        tag = ref[len("refs/tags/") :]
         if tag.endswith("^{}"):
             peeled[tag[:-3]] = sha
         else:
@@ -306,9 +307,7 @@ def _print_json(errors: list[ValidationError]) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(
-        description="Validate plugins.json against the JSON schema."
-    )
+    parser = argparse.ArgumentParser(description="Validate plugins.json against the JSON schema.")
     parser.add_argument(
         "--connectivity",
         action="store_true",
@@ -343,11 +342,20 @@ def main(argv: list[str] | None = None) -> int:
     except (FileNotFoundError, ValueError) as e:
         # Programming/install error — surface and exit nonzero.
         if args.json_out:
-            print(json.dumps({"errors": [{
-                "severity": "error",
-                "location": "<setup>",
-                "message": str(e),
-            }]}, indent=2))
+            print(
+                json.dumps(
+                    {
+                        "errors": [
+                            {
+                                "severity": "error",
+                                "location": "<setup>",
+                                "message": str(e),
+                            }
+                        ]
+                    },
+                    indent=2,
+                )
+            )
         else:
             print(f"[error] <setup>: {e}", file=sys.stderr)
         return 1

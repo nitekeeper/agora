@@ -1,5 +1,6 @@
 # tests/test_github_api.py
 """Tests for scripts.github_api."""
+
 from __future__ import annotations
 
 import io
@@ -16,7 +17,6 @@ from scripts.github_api import (
     get_repo_metadata,
     resolve_token,
 )
-
 
 # ---------- helpers ----------
 
@@ -55,7 +55,7 @@ class FakeResponse:
     def read(self) -> bytes:
         return self._buf.read()
 
-    def __enter__(self) -> "FakeResponse":
+    def __enter__(self) -> FakeResponse:
         return self
 
     def __exit__(self, *exc) -> None:
@@ -109,7 +109,7 @@ def _clear_token_env(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_resolve_token_prefers_gh(monkeypatch: pytest.MonkeyPatch) -> None:
-    def fake_run(*args, **kwargs):  # noqa: ANN001
+    def fake_run(*args, **kwargs):
         return subprocess.CompletedProcess(args[0], 0, stdout="ghp_abc\n", stderr="")
 
     monkeypatch.setattr(github_api.subprocess, "run", fake_run)
@@ -122,7 +122,7 @@ def test_resolve_token_prefers_gh(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_resolve_token_falls_back_to_github_token_when_gh_missing(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    def fake_run(*args, **kwargs):  # noqa: ANN001
+    def fake_run(*args, **kwargs):
         raise FileNotFoundError("gh not installed")
 
     monkeypatch.setattr(github_api.subprocess, "run", fake_run)
@@ -135,7 +135,7 @@ def test_resolve_token_falls_back_to_github_token_when_gh_missing(
 def test_resolve_token_falls_back_to_github_token_when_gh_fails(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    def fake_run(*args, **kwargs):  # noqa: ANN001
+    def fake_run(*args, **kwargs):
         return subprocess.CompletedProcess(args[0], 1, stdout="", stderr="not logged in")
 
     monkeypatch.setattr(github_api.subprocess, "run", fake_run)
@@ -148,7 +148,7 @@ def test_resolve_token_falls_back_to_github_token_when_gh_fails(
 def test_resolve_token_falls_back_to_gh_token_env(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    def fake_run(*args, **kwargs):  # noqa: ANN001
+    def fake_run(*args, **kwargs):
         raise FileNotFoundError()
 
     monkeypatch.setattr(github_api.subprocess, "run", fake_run)
@@ -159,7 +159,7 @@ def test_resolve_token_falls_back_to_gh_token_env(
 
 
 def test_resolve_token_anonymous(monkeypatch: pytest.MonkeyPatch) -> None:
-    def fake_run(*args, **kwargs):  # noqa: ANN001
+    def fake_run(*args, **kwargs):
         raise FileNotFoundError()
 
     monkeypatch.setattr(github_api.subprocess, "run", fake_run)
@@ -178,7 +178,7 @@ def _patch_urlopen(monkeypatch: pytest.MonkeyPatch, responses: list[Any]) -> lis
     captured: list[Any] = []
     queue = list(responses)
 
-    def fake_urlopen(req, timeout=None, context=None):  # noqa: ANN001
+    def fake_urlopen(req, timeout=None, context=None):
         captured.append(req)
         if not queue:
             raise AssertionError("urlopen called more times than expected")
@@ -313,9 +313,7 @@ def test_5xx_retry_then_success(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_authorization_header_added(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(
-        github_api, "resolve_token", lambda: ("ghp_secret", "GITHUB_TOKEN")
-    )
+    monkeypatch.setattr(github_api, "resolve_token", lambda: ("ghp_secret", "GITHUB_TOKEN"))
     captured = _patch_urlopen(monkeypatch, [FakeResponse(_ok_payload())])
 
     get_repo_metadata("octocat", "hello")

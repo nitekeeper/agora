@@ -4,6 +4,7 @@
 All functions are thin wrappers over `git` subprocess calls. The `git` binary
 must be on PATH. Network errors and non-zero exits surface as GitError.
 """
+
 from __future__ import annotations
 
 import re
@@ -11,9 +12,7 @@ import subprocess
 from pathlib import Path
 
 _DEFAULT_TIMEOUT = 30
-_GITHUB_URL_RE = re.compile(
-    r"^https://github\.com/(?P<owner>[^/]+)/(?P<repo>[^/]+?)(?:\.git)?/?$"
-)
+_GITHUB_URL_RE = re.compile(r"^https://github\.com/(?P<owner>[^/]+)/(?P<repo>[^/]+?)(?:\.git)?/?$")
 _LS_REMOTE_LINE = re.compile(r"^(?P<sha>[0-9a-f]{40})\s+refs/tags/(?P<tag>.+)$")
 
 
@@ -102,8 +101,7 @@ def get_local_remote_url(repo_dir: Path | str | None = None) -> str | None:
     return url or None
 
 
-def shallow_clone(url: str, tag: str, target_dir: Path | str,
-                  timeout: int = 120) -> Path:
+def shallow_clone(url: str, tag: str, target_dir: Path | str, timeout: int = 120) -> Path:
     """git clone --depth 1 --branch <tag> <url> <target>.
     Returns the target path. Raises GitError on failure."""
     target = Path(target_dir)
@@ -113,7 +111,6 @@ def shallow_clone(url: str, tag: str, target_dir: Path | str,
     )
     if result.returncode != 0:
         raise GitError(
-            f"git clone failed for {url}@{tag}: "
-            f"{result.stderr.strip() or 'unknown error'}"
+            f"git clone failed for {url}@{tag}: {result.stderr.strip() or 'unknown error'}"
         )
     return target

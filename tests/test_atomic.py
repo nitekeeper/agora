@@ -1,5 +1,6 @@
 # tests/test_atomic.py
 """Tests for scripts.atomic."""
+
 from __future__ import annotations
 
 import os

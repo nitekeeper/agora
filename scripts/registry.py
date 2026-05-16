@@ -2,6 +2,7 @@
 """Read/write helpers for plugins.json. save_registry() recompiles and atomically
 writes both plugins.json and the derived marketplace.json in one operation.
 """
+
 from __future__ import annotations
 
 import json
@@ -25,8 +26,10 @@ def save_registry(
     marketplace_content = json.dumps(compile_marketplace(data), indent=2) + "\n"
     marketplace_path.parent.mkdir(parents=True, exist_ok=True)
     atomic_write_pair(
-        plugins_path, plugins_content,
-        marketplace_path, marketplace_content,
+        plugins_path,
+        plugins_content,
+        marketplace_path,
+        marketplace_content,
     )
 
 

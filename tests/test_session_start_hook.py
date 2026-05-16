@@ -1,5 +1,6 @@
 # tests/test_session_start_hook.py
 """Tests for hooks/session_start.py."""
+
 from __future__ import annotations
 
 import json
@@ -41,6 +42,18 @@ def fake_paths(tmp_path, monkeypatch):
 
 
 @pytest.fixture
+def spawn_spy(monkeypatch):
+    """Replace _spawn_detached_check with a counter; tests assert call_count."""
+    calls = {"count": 0}
+
+    def fake_spawn():
+        calls["count"] += 1
+
+    monkeypatch.setattr(session_start, "_spawn_detached_check", fake_spawn)
+    return calls
+
+
+@pytest.fixture
 def compile_spy(monkeypatch):
     """Replace compile_to_disk with a counter; assert call_count in tests."""
 
@@ -59,7 +72,7 @@ def compile_spy(monkeypatch):
 
 def test_plugins_missing_is_noop(fake_paths, compile_spy):
     """If plugins.json doesn't exist, hook is a no-op."""
-    plugins, marketplace = fake_paths
+    plugins, _marketplace = fake_paths
     assert not plugins.exists()
 
     rc = session_start.main()
@@ -124,7 +137,7 @@ def test_equal_mtimes_is_noop(fake_paths, compile_spy):
 
 def test_compile_exception_is_swallowed(fake_paths, monkeypatch, capsys):
     """If compile_to_disk raises, hook prints to stderr and still returns 0."""
-    plugins, marketplace = fake_paths
+    plugins, _marketplace = fake_paths
     _touch(plugins)
 
     def boom(*args, **kwargs):
@@ -142,7 +155,7 @@ def test_compile_exception_is_swallowed(fake_paths, monkeypatch, capsys):
 
 def test_main_returns_zero_even_on_internal_failure(fake_paths, monkeypatch):
     """main() must always return 0, even if check_staleness blows up internally."""
-    plugins, marketplace = fake_paths
+    plugins, _marketplace = fake_paths
     _touch(plugins)
 
     # Force a failure deep inside check_staleness by making stat() raise.
@@ -376,8 +389,8 @@ def test_banner_swallows_unexpected_exception(fake_paths, monkeypatch, capsys):
     assert "agora session-start banner" in captured.err
 
 
-def test_main_calls_both_functions(fake_paths, monkeypatch):
-    """main() invokes check_staleness AND show_update_banner."""
+def test_main_calls_all_three_functions(fake_paths, monkeypatch):
+    """main() invokes check_staleness, opportunistic_refresh, and show_update_banner."""
     plugins, _ = fake_paths
     _touch(plugins)
 
@@ -386,13 +399,89 @@ def test_main_calls_both_functions(fake_paths, monkeypatch):
     def fake_check():
         calls.append("check")
 
+    def fake_refresh():
+        calls.append("refresh")
+
     def fake_banner():
         calls.append("banner")
 
     monkeypatch.setattr(session_start, "check_staleness", fake_check)
+    monkeypatch.setattr(session_start, "opportunistic_refresh", fake_refresh)
     monkeypatch.setattr(session_start, "show_update_banner", fake_banner)
 
     rc = session_start.main()
 
     assert rc == 0
-    assert calls == ["check", "banner"]
+    # check_staleness runs first (recompile), refresh second (kick off network),
+    # banner last (uses whatever cache is on disk now).
+    assert calls == ["check", "refresh", "banner"]
+
+
+# --------------------------------------------------------------------------- opportunistic_refresh
+class TestOpportunisticRefresh:
+    """opportunistic_refresh kicks off a detached `agora:check` subprocess
+    when the cache is missing or older than _OPPORTUNISTIC_TTL (1h by default).
+    """
+
+    def _write_cache(self, cache_path: Path, hours_ago: float) -> None:
+        from datetime import datetime, timedelta, timezone
+
+        stamp = datetime.now(timezone.utc) - timedelta(hours=hours_ago)
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        cache_path.write_text(
+            json.dumps({"fetched_at": stamp.isoformat().replace("+00:00", "Z"), "plugins": {}}),
+            encoding="utf-8",
+        )
+
+    def test_spawns_when_cache_missing(self, fake_paths, spawn_spy):
+        # No cache file → refresh.
+        _plugins, _marketplace = fake_paths
+        assert not paths.CHECK_CACHE_JSON.exists()
+        session_start.opportunistic_refresh()
+        assert spawn_spy["count"] == 1
+
+    def test_spawns_when_cache_is_stale(self, fake_paths, spawn_spy):
+        _plugins, _marketplace = fake_paths
+        # 2 hours old — past the 1h TTL.
+        self._write_cache(paths.CHECK_CACHE_JSON, hours_ago=2)
+        session_start.opportunistic_refresh()
+        assert spawn_spy["count"] == 1
+
+    def test_skips_when_cache_is_fresh(self, fake_paths, spawn_spy):
+        _plugins, _marketplace = fake_paths
+        # 30 minutes old — well within the 1h TTL.
+        self._write_cache(paths.CHECK_CACHE_JSON, hours_ago=0.5)
+        session_start.opportunistic_refresh()
+        assert spawn_spy["count"] == 0
+
+    def test_spawns_when_cache_is_unreadable(self, fake_paths, spawn_spy):
+        _plugins, _marketplace = fake_paths
+        # Cache file exists but is garbage — treat as missing and refresh.
+        paths.CHECK_CACHE_JSON.parent.mkdir(parents=True, exist_ok=True)
+        paths.CHECK_CACHE_JSON.write_text("not valid json {{{", encoding="utf-8")
+        session_start.opportunistic_refresh()
+        assert spawn_spy["count"] == 1
+
+    def test_spawns_when_fetched_at_missing(self, fake_paths, spawn_spy):
+        _plugins, _marketplace = fake_paths
+        # Valid JSON but no fetched_at field — can't determine age → refresh.
+        paths.CHECK_CACHE_JSON.parent.mkdir(parents=True, exist_ok=True)
+        paths.CHECK_CACHE_JSON.write_text(json.dumps({"plugins": {}}), encoding="utf-8")
+        session_start.opportunistic_refresh()
+        assert spawn_spy["count"] == 1
+
+    def test_swallows_exceptions_so_session_start_is_not_blocked(
+        self, fake_paths, monkeypatch, capsys
+    ):
+        """If anything in opportunistic_refresh raises, session start must
+        not be blocked. Errors go to stderr."""
+        _plugins, _marketplace = fake_paths
+
+        def boom():
+            raise RuntimeError("network broken")
+
+        monkeypatch.setattr(session_start, "_spawn_detached_check", boom)
+        # Make _cache_age return None so _spawn_detached_check is reached.
+        session_start.opportunistic_refresh()
+        captured = capsys.readouterr()
+        assert "network broken" in captured.err

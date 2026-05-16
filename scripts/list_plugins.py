@@ -5,6 +5,7 @@ Mirrors `brew list` / `apt list` / `npm list` style: a pipe-friendly columnar
 table by default, with --check for outdated-status and --json for machine
 consumption.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -111,7 +112,9 @@ def _format_table(
     widths: list[int] = []
     for i, h in enumerate(headers):
         col_min = _DEFAULT_MIN_WIDTHS.get(h, len(h))
-        col_width = max(len(h), col_min, *(len(r[i]) for r in rows)) if rows else max(len(h), col_min)
+        col_width = (
+            max(len(h), col_min, *(len(r[i]) for r in rows)) if rows else max(len(h), col_min)
+        )
         widths.append(col_width)
 
     def render_row(cells: list[str]) -> str:
@@ -131,12 +134,14 @@ def _format_table(
 def _default_rows(plugins: list[dict[str, Any]]) -> list[list[str]]:
     rows = []
     for p in plugins:
-        rows.append([
-            str(p.get("name", "-")),
-            str(p.get("current_version", "-")),
-            str(p.get("license", "-")),
-            str(p.get("category", "-")),
-        ])
+        rows.append(
+            [
+                str(p.get("name", "-")),
+                str(p.get("current_version", "-")),
+                str(p.get("license", "-")),
+                str(p.get("category", "-")),
+            ]
+        )
     return rows
 
 

@@ -11,6 +11,7 @@ Errors for a single plugin (network failure, no eligible tags) are logged
 to stderr and the batch continues. plugins.json + marketplace.json are
 written atomically as a pair via registry.save_registry().
 """
+
 from __future__ import annotations
 
 import argparse
@@ -33,12 +34,7 @@ def _now_iso() -> str:
 
 def _git_workflow_hint(names: list[str]) -> str:
     joined = " ".join(names)
-    return (
-        f"git add plugins.json; "
-        f'git commit -m "Update {joined}"; '
-        f"git push; "
-        f"gh pr create"
-    )
+    return f'git add plugins.json; git commit -m "Update {joined}"; git push; gh pr create'
 
 
 def _select_targets(data: dict, name: str | None, all_flag: bool) -> list[dict] | int:
@@ -59,9 +55,7 @@ def _select_targets(data: dict, name: str | None, all_flag: bool) -> list[dict] 
     return 1
 
 
-def _process_plugin(
-    entry: dict, include_prerelease: bool
-) -> tuple[str, str | None, str | None]:
+def _process_plugin(entry: dict, include_prerelease: bool) -> tuple[str, str | None, str | None]:
     """Return (status, old_version, new_version).
 
     status is one of: "updated", "up-to-date", "error".
@@ -148,9 +142,7 @@ def main(argv: list[str] | None = None) -> int:
     updated_names: list[str] = []
     for entry in targets:
         name = entry.get("name", "<unknown>")
-        status, old_version, new_version = _process_plugin(
-            entry, args.include_prerelease
-        )
+        status, old_version, new_version = _process_plugin(entry, args.include_prerelease)
         if status == "updated":
             print(f"{name}: {old_version} -> {new_version}")
             updated_names.append(name)

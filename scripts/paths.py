@@ -1,5 +1,6 @@
 # scripts/paths.py
 """Canonical repo-relative and user-home paths used by every agora script."""
+
 from __future__ import annotations
 
 from pathlib import Path

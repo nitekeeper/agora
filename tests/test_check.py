@@ -1,5 +1,6 @@
 # tests/test_check.py
 """Tests for scripts.check (agora:check)."""
+
 from __future__ import annotations
 
 import json
@@ -9,7 +10,6 @@ from pathlib import Path
 import pytest
 
 from scripts import check, git_helpers, paths
-
 
 SAMPLE_REGISTRY = {
     "$schema": "https://nitekeeper.github.io/agora/plugins.schema.json",
@@ -64,6 +64,7 @@ def _write_registry(plugins_json: Path, data: dict) -> None:
 
 def _set_ls_remote(monkeypatch, mapping: dict[str, dict[str, str] | Exception]):
     """Make git_helpers.ls_remote_tags return mapping[url] or raise it."""
+
     def fake(url, timeout=30):
         value = mapping.get(url)
         if isinstance(value, Exception):
@@ -71,6 +72,7 @@ def _set_ls_remote(monkeypatch, mapping: dict[str, dict[str, str] | Exception]):
         if value is None:
             raise git_helpers.GitError(f"no mock for {url}")
         return value
+
     monkeypatch.setattr(check.git_helpers, "ls_remote_tags", fake)
 
 
@@ -78,14 +80,20 @@ def _set_ls_remote(monkeypatch, mapping: dict[str, dict[str, str] | Exception]):
 def test_happy_path_two_plugins(tmp_paths, monkeypatch, capsys):
     plugins_json, _, cache_json = tmp_paths
     _write_registry(plugins_json, SAMPLE_REGISTRY)
-    _set_ls_remote(monkeypatch, {
-        "https://github.com/nitekeeper/atelier.git": {
-            "v1.0.0": "a" * 40, "v1.2.0": "c" * 40, "v1.3.0": "d" * 40,
+    _set_ls_remote(
+        monkeypatch,
+        {
+            "https://github.com/nitekeeper/atelier.git": {
+                "v1.0.0": "a" * 40,
+                "v1.2.0": "c" * 40,
+                "v1.3.0": "d" * 40,
+            },
+            "https://github.com/nitekeeper/memex.git": {
+                "v0.3.1": "b" * 40,
+                "v0.3.0": "e" * 40,
+            },
         },
-        "https://github.com/nitekeeper/memex.git": {
-            "v0.3.1": "b" * 40, "v0.3.0": "e" * 40,
-        },
-    })
+    )
 
     rc = check.main([])
     assert rc == 0
@@ -129,11 +137,15 @@ def test_empty_plugins_json(tmp_paths, monkeypatch, capsys):
 def test_one_plugin_errors(tmp_paths, monkeypatch, capsys):
     plugins_json, _, cache_json = tmp_paths
     _write_registry(plugins_json, SAMPLE_REGISTRY)
-    _set_ls_remote(monkeypatch, {
-        "https://github.com/nitekeeper/atelier.git": {"v1.0.0": "a" * 40},
-        "https://github.com/nitekeeper/memex.git":
-            git_helpers.GitError("git ls-remote failed for memex: network down"),
-    })
+    _set_ls_remote(
+        monkeypatch,
+        {
+            "https://github.com/nitekeeper/atelier.git": {"v1.0.0": "a" * 40},
+            "https://github.com/nitekeeper/memex.git": git_helpers.GitError(
+                "git ls-remote failed for memex: network down"
+            ),
+        },
+    )
 
     rc = check.main([])
     assert rc == 0
@@ -160,14 +172,17 @@ def test_ttl_fresh_no_force(tmp_paths, monkeypatch, capsys):
 
     # Pre-populate a fresh cache (1h old).
     cache_dir.mkdir(parents=True, exist_ok=True)
-    recent = (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat().replace(
-        "+00:00", "Z"
+    recent = (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat().replace("+00:00", "Z")
+    cache_json.write_text(
+        json.dumps(
+            {
+                "fetched_at": recent,
+                "include_prerelease": False,
+                "plugins": {},
+            }
+        ),
+        encoding="utf-8",
     )
-    cache_json.write_text(json.dumps({
-        "fetched_at": recent,
-        "include_prerelease": False,
-        "plugins": {},
-    }), encoding="utf-8")
 
     # Sentinel — fail if git is called.
     called = {"n": 0}
@@ -193,19 +208,25 @@ def test_ttl_stale_refreshes(tmp_paths, monkeypatch, capsys):
     _write_registry(plugins_json, SAMPLE_REGISTRY)
 
     cache_dir.mkdir(parents=True, exist_ok=True)
-    stale = (datetime.now(timezone.utc) - timedelta(hours=48)).isoformat().replace(
-        "+00:00", "Z"
+    stale = (datetime.now(timezone.utc) - timedelta(hours=48)).isoformat().replace("+00:00", "Z")
+    cache_json.write_text(
+        json.dumps(
+            {
+                "fetched_at": stale,
+                "include_prerelease": False,
+                "plugins": {},
+            }
+        ),
+        encoding="utf-8",
     )
-    cache_json.write_text(json.dumps({
-        "fetched_at": stale,
-        "include_prerelease": False,
-        "plugins": {},
-    }), encoding="utf-8")
 
-    _set_ls_remote(monkeypatch, {
-        "https://github.com/nitekeeper/atelier.git": {"v2.0.0": "f" * 40},
-        "https://github.com/nitekeeper/memex.git": {"v0.4.0": "g" * 40},
-    })
+    _set_ls_remote(
+        monkeypatch,
+        {
+            "https://github.com/nitekeeper/atelier.git": {"v2.0.0": "f" * 40},
+            "https://github.com/nitekeeper/memex.git": {"v0.4.0": "g" * 40},
+        },
+    )
 
     rc = check.main([])
     assert rc == 0
@@ -221,19 +242,25 @@ def test_force_ignores_ttl(tmp_paths, monkeypatch, capsys):
     _write_registry(plugins_json, SAMPLE_REGISTRY)
 
     cache_dir.mkdir(parents=True, exist_ok=True)
-    recent = (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat().replace(
-        "+00:00", "Z"
+    recent = (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat().replace("+00:00", "Z")
+    cache_json.write_text(
+        json.dumps(
+            {
+                "fetched_at": recent,
+                "include_prerelease": False,
+                "plugins": {},
+            }
+        ),
+        encoding="utf-8",
     )
-    cache_json.write_text(json.dumps({
-        "fetched_at": recent,
-        "include_prerelease": False,
-        "plugins": {},
-    }), encoding="utf-8")
 
-    _set_ls_remote(monkeypatch, {
-        "https://github.com/nitekeeper/atelier.git": {"v9.9.9": "h" * 40},
-        "https://github.com/nitekeeper/memex.git": {"v0.3.1": "b" * 40},
-    })
+    _set_ls_remote(
+        monkeypatch,
+        {
+            "https://github.com/nitekeeper/atelier.git": {"v9.9.9": "h" * 40},
+            "https://github.com/nitekeeper/memex.git": {"v0.3.1": "b" * 40},
+        },
+    )
 
     rc = check.main(["--force"])
     assert rc == 0
@@ -261,12 +288,15 @@ def test_include_prerelease(tmp_paths, monkeypatch, capsys):
         ],
     }
     _write_registry(plugins_json, reg)
-    _set_ls_remote(monkeypatch, {
-        "https://github.com/nitekeeper/atelier.git": {
-            "v1.0.0": "a" * 40,
-            "v2.0.0-rc1": "i" * 40,
+    _set_ls_remote(
+        monkeypatch,
+        {
+            "https://github.com/nitekeeper/atelier.git": {
+                "v1.0.0": "a" * 40,
+                "v2.0.0-rc1": "i" * 40,
+            },
         },
-    })
+    )
 
     # Without flag: picks v1.0.0 (skips prerelease).
     rc = check.main([])
@@ -287,10 +317,13 @@ def test_include_prerelease(tmp_paths, monkeypatch, capsys):
 def test_json_mode(tmp_paths, monkeypatch, capsys):
     plugins_json, _, cache_json = tmp_paths
     _write_registry(plugins_json, SAMPLE_REGISTRY)
-    _set_ls_remote(monkeypatch, {
-        "https://github.com/nitekeeper/atelier.git": {"v1.3.0": "d" * 40},
-        "https://github.com/nitekeeper/memex.git": {"v0.3.1": "b" * 40},
-    })
+    _set_ls_remote(
+        monkeypatch,
+        {
+            "https://github.com/nitekeeper/atelier.git": {"v1.3.0": "d" * 40},
+            "https://github.com/nitekeeper/memex.git": {"v0.3.1": "b" * 40},
+        },
+    )
 
     rc = check.main(["--json"])
     assert rc == 0
@@ -324,9 +357,12 @@ def test_no_tags_plugin(tmp_paths, monkeypatch, capsys):
         ],
     }
     _write_registry(plugins_json, reg)
-    _set_ls_remote(monkeypatch, {
-        "https://github.com/nitekeeper/empty.git": {},
-    })
+    _set_ls_remote(
+        monkeypatch,
+        {
+            "https://github.com/nitekeeper/empty.git": {},
+        },
+    )
 
     rc = check.main([])
     assert rc == 0

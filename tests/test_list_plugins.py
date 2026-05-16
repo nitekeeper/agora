@@ -1,5 +1,6 @@
 # tests/test_list_plugins.py
 """Tests for scripts.list_plugins (agora:list)."""
+
 from __future__ import annotations
 
 import json
@@ -8,7 +9,6 @@ from pathlib import Path
 import pytest
 
 from scripts import list_plugins
-
 
 SAMPLE_PLUGINS = {
     "$schema": "https://nitekeeper.github.io/agora/plugins.schema.json",
@@ -70,8 +70,10 @@ def test_default_two_plugins(tmp_path: Path, monkeypatch, capsys) -> None:
 
     rc = _run(
         monkeypatch,
-        "--plugins", str(plugins_path),
-        "--cache", str(cache_path),
+        "--plugins",
+        str(plugins_path),
+        "--cache",
+        str(cache_path),
     )
     out = capsys.readouterr().out
 
@@ -98,8 +100,10 @@ def test_default_empty(tmp_path: Path, monkeypatch, capsys) -> None:
 
     rc = _run(
         monkeypatch,
-        "--plugins", str(plugins_path),
-        "--cache", str(cache_path),
+        "--plugins",
+        str(plugins_path),
+        "--cache",
+        str(cache_path),
     )
     out = capsys.readouterr().out
 
@@ -112,7 +116,8 @@ def test_json_mode(tmp_path: Path, monkeypatch, capsys) -> None:
     plugins_path = _write_plugins(tmp_path, SAMPLE_PLUGINS)
     rc = _run(
         monkeypatch,
-        "--plugins", str(plugins_path),
+        "--plugins",
+        str(plugins_path),
         "--json",
     )
     out = capsys.readouterr().out
@@ -140,24 +145,29 @@ def test_json_mode_empty(tmp_path: Path, monkeypatch, capsys) -> None:
 # --------------------------------------------------------------------------- 5
 def test_check_with_populated_cache(tmp_path: Path, monkeypatch, capsys) -> None:
     plugins_path = _write_plugins(tmp_path, SAMPLE_PLUGINS)
-    cache_path = _write_cache(tmp_path, {
-        "fetched_at": "2026-05-15T19:00:00Z",
-        "plugins": {
-            "atelier": {
-                "latest_version": "v1.3.0",
-                "checked_at": "2026-05-15T18:55:00Z",
-            },
-            "memex": {
-                "latest_version": "v0.3.1",
-                "checked_at": "2026-05-15T18:55:00Z",
+    cache_path = _write_cache(
+        tmp_path,
+        {
+            "fetched_at": "2026-05-15T19:00:00Z",
+            "plugins": {
+                "atelier": {
+                    "latest_version": "v1.3.0",
+                    "checked_at": "2026-05-15T18:55:00Z",
+                },
+                "memex": {
+                    "latest_version": "v0.3.1",
+                    "checked_at": "2026-05-15T18:55:00Z",
+                },
             },
         },
-    })
+    )
 
     rc = _run(
         monkeypatch,
-        "--plugins", str(plugins_path),
-        "--cache", str(cache_path),
+        "--plugins",
+        str(plugins_path),
+        "--cache",
+        str(cache_path),
         "--check",
     )
     captured = capsys.readouterr()
@@ -168,42 +178,45 @@ def test_check_with_populated_cache(tmp_path: Path, monkeypatch, capsys) -> None
     assert "LATEST" in out
     assert "STATUS" in out
     # atelier: outdated
-    atelier_line = next(l for l in out.splitlines() if "atelier" in l)
+    atelier_line = next(line for line in out.splitlines() if "atelier" in line)
     assert "v1.3.0" in atelier_line
     assert "outdated" in atelier_line
     # memex: up-to-date
-    memex_line = next(l for l in out.splitlines() if "memex" in l)
+    memex_line = next(line for line in out.splitlines() if "memex" in line)
     assert "v0.3.1" in memex_line
     assert "up-to-date" in memex_line
 
 
 # --------------------------------------------------------------------------- 5b
-def test_check_unknown_when_plugin_missing_from_cache(
-    tmp_path: Path, monkeypatch, capsys
-) -> None:
+def test_check_unknown_when_plugin_missing_from_cache(tmp_path: Path, monkeypatch, capsys) -> None:
     plugins_path = _write_plugins(tmp_path, SAMPLE_PLUGINS)
-    cache_path = _write_cache(tmp_path, {
-        "fetched_at": "2026-05-15T19:00:00Z",
-        "plugins": {
-            "atelier": {
-                "latest_version": "v1.0.0",
-                "checked_at": "2026-05-15T18:55:00Z",
+    cache_path = _write_cache(
+        tmp_path,
+        {
+            "fetched_at": "2026-05-15T19:00:00Z",
+            "plugins": {
+                "atelier": {
+                    "latest_version": "v1.0.0",
+                    "checked_at": "2026-05-15T18:55:00Z",
+                },
+                # memex absent
             },
-            # memex absent
         },
-    })
+    )
 
     _run(
         monkeypatch,
-        "--plugins", str(plugins_path),
-        "--cache", str(cache_path),
+        "--plugins",
+        str(plugins_path),
+        "--cache",
+        str(cache_path),
         "--check",
     )
     out = capsys.readouterr().out
 
-    atelier_line = next(l for l in out.splitlines() if "atelier" in l)
+    atelier_line = next(line for line in out.splitlines() if "atelier" in line)
     assert "up-to-date" in atelier_line
-    memex_line = next(l for l in out.splitlines() if "memex" in l)
+    memex_line = next(line for line in out.splitlines() if "memex" in line)
     assert "unknown" in memex_line
 
 
@@ -216,8 +229,10 @@ def test_check_with_missing_cache_warns_and_marks_unknown(
 
     rc = _run(
         monkeypatch,
-        "--plugins", str(plugins_path),
-        "--cache", str(cache_path),
+        "--plugins",
+        str(plugins_path),
+        "--cache",
+        str(cache_path),
         "--check",
     )
     captured = capsys.readouterr()
@@ -227,29 +242,32 @@ def test_check_with_missing_cache_warns_and_marks_unknown(
     assert "cache not found" in captured.err
     assert "scripts/check.py" in captured.err
     # All rows marked unknown on stdout
-    out_lines = [l for l in captured.out.splitlines() if "nitekeeper" in l]
-    assert all("unknown" in l for l in out_lines)
+    out_lines = [line for line in captured.out.splitlines() if "nitekeeper" in line]
+    assert all("unknown" in line for line in out_lines)
 
 
 # --------------------------------------------------------------------------- 7
-def test_check_json_includes_latest_and_status(
-    tmp_path: Path, monkeypatch, capsys
-) -> None:
+def test_check_json_includes_latest_and_status(tmp_path: Path, monkeypatch, capsys) -> None:
     plugins_path = _write_plugins(tmp_path, SAMPLE_PLUGINS)
-    cache_path = _write_cache(tmp_path, {
-        "fetched_at": "2026-05-15T19:00:00Z",
-        "plugins": {
-            "atelier": {
-                "latest_version": "v1.3.0",
-                "checked_at": "2026-05-15T18:55:00Z",
+    cache_path = _write_cache(
+        tmp_path,
+        {
+            "fetched_at": "2026-05-15T19:00:00Z",
+            "plugins": {
+                "atelier": {
+                    "latest_version": "v1.3.0",
+                    "checked_at": "2026-05-15T18:55:00Z",
+                },
             },
         },
-    })
+    )
 
     rc = _run(
         monkeypatch,
-        "--plugins", str(plugins_path),
-        "--cache", str(cache_path),
+        "--plugins",
+        str(plugins_path),
+        "--cache",
+        str(cache_path),
         "--check",
         "--json",
     )
@@ -295,8 +313,10 @@ def test_no_ansi_when_not_tty(tmp_path: Path, monkeypatch, capsys) -> None:
 
     _run(
         monkeypatch,
-        "--plugins", str(plugins_path),
-        "--cache", str(cache_path),
+        "--plugins",
+        str(plugins_path),
+        "--cache",
+        str(cache_path),
         isatty=False,
     )
     out = capsys.readouterr().out
@@ -309,8 +329,10 @@ def test_ansi_when_tty(tmp_path: Path, monkeypatch, capsys) -> None:
 
     _run(
         monkeypatch,
-        "--plugins", str(plugins_path),
-        "--cache", str(cache_path),
+        "--plugins",
+        str(plugins_path),
+        "--cache",
+        str(cache_path),
         isatty=True,
     )
     out = capsys.readouterr().out
@@ -321,20 +343,25 @@ def test_ansi_when_tty(tmp_path: Path, monkeypatch, capsys) -> None:
 def test_outdated_alias(tmp_path: Path, monkeypatch, capsys) -> None:
     """--outdated should behave identically to --check."""
     plugins_path = _write_plugins(tmp_path, SAMPLE_PLUGINS)
-    cache_path = _write_cache(tmp_path, {
-        "fetched_at": "2026-05-15T19:00:00Z",
-        "plugins": {
-            "atelier": {
-                "latest_version": "v1.3.0",
-                "checked_at": "2026-05-15T18:55:00Z",
+    cache_path = _write_cache(
+        tmp_path,
+        {
+            "fetched_at": "2026-05-15T19:00:00Z",
+            "plugins": {
+                "atelier": {
+                    "latest_version": "v1.3.0",
+                    "checked_at": "2026-05-15T18:55:00Z",
+                },
             },
         },
-    })
+    )
 
     rc = _run(
         monkeypatch,
-        "--plugins", str(plugins_path),
-        "--cache", str(cache_path),
+        "--plugins",
+        str(plugins_path),
+        "--cache",
+        str(cache_path),
         "--outdated",
     )
     out = capsys.readouterr().out

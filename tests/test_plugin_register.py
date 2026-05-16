@@ -1,17 +1,17 @@
 # tests/test_plugin_register.py
 """Tests for scripts.plugin_register."""
+
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 import pytest
 
 from scripts import plugin_register
 from scripts.github_api import GitHubAPIError, RepoMetadata
 from scripts.plugin_register import RegisterError
-
 
 # ---------- fixtures ----------
 
@@ -39,9 +39,7 @@ def reg_paths(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> tuple[Path, Pa
     # overridden, but we pass them explicitly via register(). Still, patch
     # paths for any code that reaches the module-level default.
     monkeypatch.setattr(plugin_register.registry, "PLUGINS_JSON", plugins_path)
-    monkeypatch.setattr(
-        plugin_register.registry, "MARKETPLACE_JSON", marketplace_path
-    )
+    monkeypatch.setattr(plugin_register.registry, "MARKETPLACE_JSON", marketplace_path)
     return plugins_path, marketplace_path
 
 
@@ -79,18 +77,16 @@ def _install_default_mocks(
         )
     if clone_fn is None:
         clone_fn = _make_clone_mock()
+    monkeypatch.setattr(plugin_register.git_helpers, "ls_remote_tags", lambda url, **kw: tags)
+    monkeypatch.setattr(plugin_register.git_helpers, "shallow_clone", clone_fn)
     monkeypatch.setattr(
-        plugin_register.git_helpers, "ls_remote_tags", lambda url, **kw: tags
-    )
-    monkeypatch.setattr(
-        plugin_register.git_helpers, "shallow_clone", clone_fn
-    )
-    monkeypatch.setattr(
-        plugin_register.git_helpers, "get_local_remote_url",
+        plugin_register.git_helpers,
+        "get_local_remote_url",
         lambda repo_dir=None: local_url,
     )
     monkeypatch.setattr(
-        plugin_register.github_api, "get_repo_metadata",
+        plugin_register.github_api,
+        "get_repo_metadata",
         lambda owner, repo: metadata,
     )
 
@@ -117,7 +113,7 @@ def test_register_new_plugin_writes_full_entry(
     assert entry["description"] == "A nifty plugin"
     assert entry["license"] == "MIT"
     assert entry["category"] == "development"  # from 'claude-code' topic
-    assert entry["keywords"] == ["workflow"]   # category-topic stripped
+    assert entry["keywords"] == ["workflow"]  # category-topic stripped
     assert entry["author"] == {"name": "nitekeeper"}
     assert entry["homepage"] == "https://example.com/plug"
     assert entry["registered_at"].endswith("Z")
@@ -155,9 +151,7 @@ def test_register_existing_plugin_preserves_registered_at(
     marketplace_path = tmp_path / ".claude-plugin" / "marketplace.json"
 
     monkeypatch.setattr(plugin_register.registry, "PLUGINS_JSON", plugins_path)
-    monkeypatch.setattr(
-        plugin_register.registry, "MARKETPLACE_JSON", marketplace_path
-    )
+    monkeypatch.setattr(plugin_register.registry, "MARKETPLACE_JSON", marketplace_path)
 
     _install_default_mocks(
         monkeypatch,
@@ -239,9 +233,7 @@ def test_register_errors_when_only_prereleases_default_mode(
     monkeypatch: pytest.MonkeyPatch, reg_paths: tuple[Path, Path]
 ) -> None:
     plugins_path, marketplace_path = reg_paths
-    _install_default_mocks(
-        monkeypatch, tags={"v1.0.0-rc1": "d" * 40, "v1.0.0-beta": "e" * 40}
-    )
+    _install_default_mocks(monkeypatch, tags={"v1.0.0-rc1": "d" * 40, "v1.0.0-beta": "e" * 40})
 
     with pytest.raises(RegisterError, match="no stable release tag"):
         plugin_register.register(
@@ -255,9 +247,7 @@ def test_register_include_prerelease_selects_prerelease(
     monkeypatch: pytest.MonkeyPatch, reg_paths: tuple[Path, Path]
 ) -> None:
     plugins_path, marketplace_path = reg_paths
-    _install_default_mocks(
-        monkeypatch, tags={"v1.0.0-rc1": "d" * 40, "v1.0.0-beta": "e" * 40}
-    )
+    _install_default_mocks(monkeypatch, tags={"v1.0.0-rc1": "d" * 40, "v1.0.0-beta": "e" * 40})
 
     entry = plugin_register.register(
         url="https://github.com/nitekeeper/atelier.git",
@@ -341,9 +331,7 @@ def test_register_description_override(
     plugins_path, marketplace_path = reg_paths
     _install_default_mocks(
         monkeypatch,
-        metadata=RepoMetadata(
-            description="", topics=[], homepage=None, license_spdx_id="MIT"
-        ),
+        metadata=RepoMetadata(description="", topics=[], homepage=None, license_spdx_id="MIT"),
     )
     entry = plugin_register.register(
         url="https://github.com/nitekeeper/atelier.git",
@@ -479,9 +467,7 @@ def test_register_homepage_defaults_to_github(
     plugins_path, marketplace_path = reg_paths
     _install_default_mocks(
         monkeypatch,
-        metadata=RepoMetadata(
-            description="x", topics=[], homepage=None, license_spdx_id="MIT"
-        ),
+        metadata=RepoMetadata(description="x", topics=[], homepage=None, license_spdx_id="MIT"),
     )
     entry = plugin_register.register(
         url="https://github.com/nitekeeper/atelier.git",
@@ -503,9 +489,7 @@ def test_register_github_api_failure_surfaces(
     # First call (license fallback) returns valid via default LICENSE file,
     # but we need second call (metadata) to fail. Re-patch after the local
     # license file IS present, so license resolution doesn't even consult GH.
-    monkeypatch.setattr(
-        plugin_register.github_api, "get_repo_metadata", _boom
-    )
+    monkeypatch.setattr(plugin_register.github_api, "get_repo_metadata", _boom)
     with pytest.raises(RegisterError, match="GitHub API request failed"):
         plugin_register.register(
             url="https://github.com/nitekeeper/atelier.git",

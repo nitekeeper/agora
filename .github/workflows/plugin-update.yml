@@ -1,0 +1,97 @@
+name: Plugin update (push-triggered)
+
+# Dispatched by individual plugin repos when they publish a new release.
+# See docs/automation.md for the plugin-side workflow template + PAT setup.
+#
+# Payload:
+#   client_payload.plugin     — plugin name (e.g. "memex") -- REQUIRED
+#   client_payload.tag        — the just-published tag (e.g. "v2.3.0") -- optional
+#
+# This workflow runs `scripts/update.py <plugin>`, commits the diff if
+# anything changed, and pushes the bump as a PR. The PR runs through the
+# same CI gates a human-opened PR would.
+
+on:
+  repository_dispatch:
+    types: [plugin-released]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    name: Bump pinned version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate payload
+        run: |
+          plugin='${{ github.event.client_payload.plugin }}'
+          if [ -z "$plugin" ]; then
+            echo "::error::client_payload.plugin is required"
+            exit 1
+          fi
+          # Basic safety: plugin name must look like a registered plugin id.
+          # Whitelist [a-z][a-z0-9-]* — matches what agora's naming rules allow.
+          if ! echo "$plugin" | grep -qE '^[a-z][a-z0-9-]*$'; then
+            echo "::error::invalid plugin name: $plugin"
+            exit 1
+          fi
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run scripts/update.py
+        id: update
+        env:
+          # update.py talks to the GitHub API for tag resolution; the default
+          # token has read access to public repos and to this repo. If a
+          # plugin repo is private, the dispatcher needs a token with access.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          plugin='${{ github.event.client_payload.plugin }}'
+          python scripts/update.py "$plugin"
+          if [ -n "$(git status --porcelain plugins.json .claude-plugin/marketplace.json)" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No version change for $plugin; nothing to PR."
+          fi
+
+      - name: Open PR with the bump
+        if: steps.update.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          plugin='${{ github.event.client_payload.plugin }}'
+          tag='${{ github.event.client_payload.tag }}'
+          branch="auto-update/${plugin}-$(date -u +%Y%m%d-%H%M%S)"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout -b "$branch"
+          git add plugins.json .claude-plugin/marketplace.json
+          if [ -n "$tag" ]; then
+            git commit -m "auto-update: bump $plugin to $tag"
+            title="auto-update: bump $plugin to $tag"
+          else
+            git commit -m "auto-update: bump $plugin"
+            title="auto-update: bump $plugin"
+          fi
+          git push -u origin "$branch"
+          gh pr create \
+            --base main \
+            --head "$branch" \
+            --title "$title" \
+            --body "Automated bump triggered by ${plugin}'s release workflow via repository_dispatch (plugin-released event). See .github/workflows/plugin-update.yml."

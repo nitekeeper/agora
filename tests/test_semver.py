@@ -37,9 +37,7 @@ class TestParsePrerelease:
 
 
 class TestParseInvalid:
-    @pytest.mark.parametrize(
-        "tag", ["foo", "v1", "v1.2", "1.2.x", "", "v1.2.3.4"]
-    )
+    @pytest.mark.parametrize("tag", ["foo", "v1", "v1.2", "1.2.x", "", "v1.2.3.4"])
     def test_invalid(self, tag: str) -> None:
         assert parse(tag) is None
 
@@ -90,9 +88,7 @@ def test_prerelease_precedence_canonical() -> None:
     versions = [parse(t) for t in chain]
     assert all(v is not None for v in versions)
     for i in range(len(versions) - 1):
-        assert compare(versions[i], versions[i + 1]) == -1, (
-            f"{chain[i]} should be < {chain[i + 1]}"
-        )
+        assert compare(versions[i], versions[i + 1]) == -1, f"{chain[i]} should be < {chain[i + 1]}"
 
 
 class TestPickLatest:
@@ -103,9 +99,7 @@ class TestPickLatest:
         assert pick_latest(["v1.0.0", "v2.0.0-rc.1"]) == "v1.0.0"
 
     def test_include_prerelease(self) -> None:
-        result = pick_latest(
-            ["v1.0.0", "v2.0.0-rc.1"], include_prerelease=True
-        )
+        result = pick_latest(["v1.0.0", "v2.0.0-rc.1"], include_prerelease=True)
         assert result == "v2.0.0-rc.1"
 
     def test_empty_list(self) -> None:
@@ -115,9 +109,7 @@ class TestPickLatest:
         assert pick_latest(["garbage", "foo"]) is None
 
     def test_only_prereleases_default(self) -> None:
-        result = pick_latest(
-            ["v1.0.0-rc.1", "v0.9.0-beta"], include_prerelease=False
-        )
+        result = pick_latest(["v1.0.0-rc.1", "v0.9.0-beta"], include_prerelease=False)
         assert result is None
 
     def test_preserves_v_prefix(self) -> None:

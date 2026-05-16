@@ -5,7 +5,6 @@ from __future__ import annotations
 import copy
 import json
 import subprocess
-import sys
 from pathlib import Path
 from unittest import mock
 
@@ -13,8 +12,7 @@ import pytest
 
 from scripts import validate as validate_mod
 from scripts.paths import SCHEMA_JSON
-from scripts.validate import ValidationError, main, validate
-
+from scripts.validate import main, validate
 
 # ---------- fixtures ----------
 
@@ -70,10 +68,12 @@ def empty_doc() -> dict:
 @pytest.fixture
 def write_doc(tmp_path):
     """Returns a function (doc) -> path that writes doc to tmp plugins.json."""
+
     def _w(doc: dict) -> Path:
         p = tmp_path / "plugins.json"
         _write_json(p, doc)
         return p
+
     return _w
 
 
@@ -167,9 +167,9 @@ def test_multiple_errors(write_doc, good_doc):
     errors = validate(plugins_path=write_doc(doc), schema_path=SCHEMA_JSON)
     assert len(errors) == 3
     locs = {e.location for e in errors}
-    assert any("current_version" in l for l in locs)
-    assert any("current_sha" in l for l in locs)
-    assert any("license" in l for l in locs)
+    assert any("current_version" in line for line in locs)
+    assert any("current_sha" in line for line in locs)
+    assert any("license" in line for line in locs)
 
 
 # ---------- file errors ----------
@@ -213,7 +213,9 @@ def test_connectivity_ok(write_doc, good_doc, good_plugin):
     sha = good_plugin["current_sha"]
     ver = good_plugin["current_version"]
     stdout = f"{sha}\trefs/tags/{ver}\n"
-    with mock.patch.object(validate_mod.subprocess, "run", return_value=_mk_completed(stdout=stdout)) as m:
+    with mock.patch.object(
+        validate_mod.subprocess, "run", return_value=_mk_completed(stdout=stdout)
+    ) as m:
         errors = validate(
             plugins_path=write_doc(good_doc),
             schema_path=SCHEMA_JSON,
@@ -227,7 +229,9 @@ def test_connectivity_tag_missing(write_doc, good_doc, good_plugin):
     # ls-remote returns a different tag.
     other_sha = "f" * 40
     stdout = f"{other_sha}\trefs/tags/v9.9.9\n"
-    with mock.patch.object(validate_mod.subprocess, "run", return_value=_mk_completed(stdout=stdout)):
+    with mock.patch.object(
+        validate_mod.subprocess, "run", return_value=_mk_completed(stdout=stdout)
+    ):
         errors = validate(
             plugins_path=write_doc(good_doc),
             schema_path=SCHEMA_JSON,
@@ -243,7 +247,9 @@ def test_connectivity_sha_mismatch(write_doc, good_doc, good_plugin):
     ver = good_plugin["current_version"]
     wrong_sha = "f" * 40
     stdout = f"{wrong_sha}\trefs/tags/{ver}\n"
-    with mock.patch.object(validate_mod.subprocess, "run", return_value=_mk_completed(stdout=stdout)):
+    with mock.patch.object(
+        validate_mod.subprocess, "run", return_value=_mk_completed(stdout=stdout)
+    ):
         errors = validate(
             plugins_path=write_doc(good_doc),
             schema_path=SCHEMA_JSON,
@@ -257,6 +263,7 @@ def test_connectivity_sha_mismatch(write_doc, good_doc, good_plugin):
 def test_connectivity_timeout(write_doc, good_doc):
     def _raise(*a, **kw):
         raise subprocess.TimeoutExpired(cmd=a[0] if a else "git", timeout=10)
+
     with mock.patch.object(validate_mod.subprocess, "run", side_effect=_raise):
         errors = validate(
             plugins_path=write_doc(good_doc),
@@ -270,6 +277,7 @@ def test_connectivity_timeout(write_doc, good_doc):
 def test_connectivity_git_not_installed(write_doc, good_doc):
     def _raise(*a, **kw):
         raise FileNotFoundError("git not installed")
+
     with mock.patch.object(validate_mod.subprocess, "run", side_effect=_raise):
         errors = validate(
             plugins_path=write_doc(good_doc),
@@ -285,11 +293,10 @@ def test_connectivity_annotated_tag_peeled(write_doc, good_doc, good_plugin):
     ver = good_plugin["current_version"]
     pinned_sha = good_plugin["current_sha"]
     tag_obj_sha = "9" * 40
-    stdout = (
-        f"{tag_obj_sha}\trefs/tags/{ver}\n"
-        f"{pinned_sha}\trefs/tags/{ver}^{{}}\n"
-    )
-    with mock.patch.object(validate_mod.subprocess, "run", return_value=_mk_completed(stdout=stdout)):
+    stdout = f"{tag_obj_sha}\trefs/tags/{ver}\n{pinned_sha}\trefs/tags/{ver}^{{}}\n"
+    with mock.patch.object(
+        validate_mod.subprocess, "run", return_value=_mk_completed(stdout=stdout)
+    ):
         errors = validate(
             plugins_path=write_doc(good_doc),
             schema_path=SCHEMA_JSON,
@@ -318,11 +325,15 @@ def test_cli_exit_one_on_invalid(write_doc, good_doc, capsys):
 
 
 def test_cli_json_output_valid(write_doc, empty_doc, capsys):
-    rc = main([
-        "--plugins", str(write_doc(empty_doc)),
-        "--schema", str(SCHEMA_JSON),
-        "--json",
-    ])
+    rc = main(
+        [
+            "--plugins",
+            str(write_doc(empty_doc)),
+            "--schema",
+            str(SCHEMA_JSON),
+            "--json",
+        ]
+    )
     captured = capsys.readouterr()
     assert rc == 0
     payload = json.loads(captured.out)
@@ -332,11 +343,15 @@ def test_cli_json_output_valid(write_doc, empty_doc, capsys):
 def test_cli_json_output_invalid(write_doc, good_doc, capsys):
     doc = copy.deepcopy(good_doc)
     doc["plugins"][0]["license"] = "WTFPL"
-    rc = main([
-        "--plugins", str(write_doc(doc)),
-        "--schema", str(SCHEMA_JSON),
-        "--json",
-    ])
+    rc = main(
+        [
+            "--plugins",
+            str(write_doc(doc)),
+            "--schema",
+            str(SCHEMA_JSON),
+            "--json",
+        ]
+    )
     captured = capsys.readouterr()
     assert rc == 1
     payload = json.loads(captured.out)

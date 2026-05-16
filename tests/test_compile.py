@@ -1,8 +1,8 @@
 # tests/test_compile.py
 """Tests for scripts.compile."""
+
 from __future__ import annotations
 
-import copy
 import json
 from pathlib import Path
 
@@ -95,8 +95,14 @@ def test_compile_drops_license_and_timestamps() -> None:
     data = {"marketplace": _base_marketplace(), "plugins": [_full_plugin()]}
     out = compile_marketplace(data)
     p = out["plugins"][0]
-    for dropped in ("license", "registered_at", "updated_at", "repository_url",
-                    "current_version", "current_sha"):
+    for dropped in (
+        "license",
+        "registered_at",
+        "updated_at",
+        "repository_url",
+        "current_version",
+        "current_sha",
+    ):
         assert dropped not in p, f"{dropped} should not appear in output"
 
 
