@@ -1,5 +1,4 @@
 ---
-name: agora:setup
 description: Use when registering agora in ~/.claude/settings.json after the initial install — useful for re-running bootstrap on a second machine, after settings.json corruption, or after the agora repo has been moved. For the very first install, run `python scripts/setup.py` directly from the agora directory.
 ---
 

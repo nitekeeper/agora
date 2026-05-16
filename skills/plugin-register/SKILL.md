@@ -1,5 +1,4 @@
 ---
-name: agora:plugin-register
 description: Use when registering a new plugin in agora or refreshing an existing entry to a newer release. Idempotent.
 ---
 

@@ -1,5 +1,4 @@
 ---
-name: agora:validate
 description: Use when plugins.json has been hand-edited and you want to lint it before committing, or when CI needs to verify the registry is well-formed.
 ---
 

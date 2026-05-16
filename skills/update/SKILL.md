@@ -1,5 +1,4 @@
 ---
-name: agora:update
 description: Use when refreshing a single plugin or all plugins in the agora registry to their latest stable releases. Updates plugins.json and recompiles marketplace.json atomically.
 ---
 

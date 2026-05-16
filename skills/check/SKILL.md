@@ -1,5 +1,4 @@
 ---
-name: agora:check
 description: Use when refreshing the local "latest available version" cache for all registered plugins. Read by the session-start update banner.
 ---
 

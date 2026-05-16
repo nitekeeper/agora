@@ -1,5 +1,4 @@
 ---
-name: agora:list
 description: Use when you want to see what plugins are registered in the local agora marketplace and optionally which ones have updates available.
 ---
 
