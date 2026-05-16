@@ -8,7 +8,7 @@ Refreshes `~/.agora/check-cache.json` — the local cache of the highest semver 
 
 ## When to use
 
-- Manual refresh when you want an up-to-the-minute view of which plugins have new releases (e.g. before running `agora:list --check`).
+- Manual refresh when you want an up-to-the-minute view of which plugins have new releases (e.g. before running `internal/list/SKILL.md` with `--check`).
 - Almost never as an explicit step — the session-start hook calls this automatically when the cache is missing or stale.
 
 ## Procedure
