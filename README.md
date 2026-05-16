@@ -83,6 +83,12 @@ agora:plugin-register --url https://github.com/<owner>/<repo>.git
 
 Open a pull request against `nitekeeper/agora` with the updated `plugins.json`. Direct pushes to `main` are blocked.
 
+**(Optional) Wire up automatic bumps on future releases**
+
+After your plugin is registered, you can set up a one-time hook so future releases auto-bump the pin in agora. Each new release in your plugin repo fires a GitHub `repository_dispatch` event at agora; agora's `plugin-update.yml` workflow receives it, runs `scripts/update.py <your-plugin>`, and opens a PR with the new pin. The PR goes through agora's CI gates before merging.
+
+Setup is ~5 minutes per plugin (a fine-grained PAT + a 20-line workflow file). See [docs/automation.md](docs/automation.md) for the full walkthrough.
+
 ### For agora contributors — working on agora itself
 
 You want to hack on the marketplace tooling, fix bugs in the registry compiler, or send PRs.
@@ -156,9 +162,11 @@ This matches the default behavior of npm, cargo, and pip.
 
 ## Updates
 
-- **User-initiated only.** Agora never auto-upgrades — version bumps don't happen mid-session.
+- **User-initiated only.** Agora never auto-upgrades — version bumps don't happen mid-session. The session-start banner only *announces* available updates; you decide when to apply them with `agora:update`.
 - **Session-start banner** announces pending updates, read from a local cache populated by `agora:check`. Example: `atelier  v1.2.0 → v1.3.0`. The banner is quiet and dismissible.
-- **Cache TTL ~24h.** Offline runs fall back to the last known cache silently.
+- **Opportunistic cache refresh.** The session-start hook keeps the cache fresh in the background: if the cache is missing or older than 1 hour, it spawns a detached `agora:check` subprocess. The subprocess runs fully backgrounded — no console window, no blocking session start. The banner reflects the latest data on your next session.
+- **Cache TTL ~24h** at the `agora:check` layer. Offline runs fall back to the last known cache silently.
+- **Optional push-based bumps.** Plugin authors can wire their release workflow to fire a `repository_dispatch` event at agora; agora then opens a PR with the bump within seconds. Setup walkthrough at [docs/automation.md](docs/automation.md).
 
 ## Repository layout
 
@@ -180,6 +188,12 @@ agora/
     agora/
       SKILL.md
   docs/
+    automation.md          # plugin-author guide: push-based version bumps
+  .github/
+    workflows/
+      ci.yml               # lint + security + tests, runs on every PR
+      plugin-update.yml    # receives repository_dispatch from plugin repos
+    dependabot.yml         # weekly pip + github-actions updates
   README.md
 ```
 
