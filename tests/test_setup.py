@@ -1,5 +1,6 @@
 # tests/test_setup.py
 """Tests for scripts.setup (agora bootstrap)."""
+
 from __future__ import annotations
 
 import json
@@ -7,8 +8,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts import paths, setup as agora_setup
-
+from scripts import paths
+from scripts import setup as agora_setup
 
 SAMPLE_PLUGINS = {
     "$schema": "https://nitekeeper.github.io/agora/plugins.schema.json",
@@ -47,9 +48,7 @@ def _setup_env(tmp_path: Path, monkeypatch, settings_content: str | None = None)
     (repo_root / ".claude-plugin").mkdir()
     plugins_path = repo_root / "plugins.json"
     marketplace_path = repo_root / ".claude-plugin" / "marketplace.json"
-    plugins_path.write_text(
-        json.dumps(SAMPLE_PLUGINS, indent=2) + "\n", encoding="utf-8"
-    )
+    plugins_path.write_text(json.dumps(SAMPLE_PLUGINS, indent=2) + "\n", encoding="utf-8")
 
     monkeypatch.setattr(paths, "CLAUDE_SETTINGS_JSON", settings_path)
     monkeypatch.setattr(paths, "REPO_ROOT", repo_root)
@@ -58,6 +57,7 @@ def _setup_env(tmp_path: Path, monkeypatch, settings_content: str | None = None)
     # compile_to_disk reads its default args at call time from its own module,
     # which captured these paths at import. Patch there too.
     from scripts import compile as compile_module
+
     monkeypatch.setattr(compile_module, "PLUGINS_JSON", plugins_path)
     monkeypatch.setattr(compile_module, "MARKETPLACE_JSON", marketplace_path)
 
@@ -86,9 +86,7 @@ def test_first_run_no_existing_settings(tmp_path: Path, monkeypatch, capsys) -> 
 
 
 # --------------------------------------------------------------------------- 2
-def test_existing_unrelated_keys_preserved(
-    tmp_path: Path, monkeypatch, capsys
-) -> None:
+def test_existing_unrelated_keys_preserved(tmp_path: Path, monkeypatch, capsys) -> None:
     existing = {"theme": "dark", "model": "opus", "permissions": {"allow": []}}
     settings_path, repo_root, _, _ = _setup_env(
         tmp_path, monkeypatch, json.dumps(existing, indent=2)
@@ -101,15 +99,11 @@ def test_existing_unrelated_keys_preserved(
     assert data["theme"] == "dark"
     assert data["model"] == "opus"
     assert data["permissions"] == {"allow": []}
-    assert data["extraKnownMarketplaces"]["agora"]["path"] == _expected_agora_path(
-        repo_root
-    )
+    assert data["extraKnownMarketplaces"]["agora"]["path"] == _expected_agora_path(repo_root)
 
 
 # --------------------------------------------------------------------------- 3
-def test_existing_other_marketplaces_kept(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_existing_other_marketplaces_kept(tmp_path: Path, monkeypatch) -> None:
     existing = {
         "extraKnownMarketplaces": {
             "other": {"source": "url", "url": "https://example.com/mkt.json"}
@@ -130,9 +124,7 @@ def test_existing_other_marketplaces_kept(
 
 
 # --------------------------------------------------------------------------- 4
-def test_already_correct_state_no_changes(
-    tmp_path: Path, monkeypatch, capsys
-) -> None:
+def test_already_correct_state_no_changes(tmp_path: Path, monkeypatch, capsys) -> None:
     # Build a settings.json that already matches what we'd produce.
     # We need to know the repo_root path that will be patched in.
     home = tmp_path / "home"
@@ -145,9 +137,7 @@ def test_already_correct_state_no_changes(
     (repo_root / ".claude-plugin").mkdir()
     plugins_path = repo_root / "plugins.json"
     marketplace_path = repo_root / ".claude-plugin" / "marketplace.json"
-    plugins_path.write_text(
-        json.dumps(SAMPLE_PLUGINS, indent=2) + "\n", encoding="utf-8"
-    )
+    plugins_path.write_text(json.dumps(SAMPLE_PLUGINS, indent=2) + "\n", encoding="utf-8")
     agora_path = str(repo_root.resolve()).replace("\\", "/")
     settings_path.write_text(
         json.dumps(
@@ -163,12 +153,14 @@ def test_already_correct_state_no_changes(
     monkeypatch.setattr(paths, "PLUGINS_JSON", plugins_path)
     monkeypatch.setattr(paths, "MARKETPLACE_JSON", marketplace_path)
     from scripts import compile as compile_module
+
     monkeypatch.setattr(compile_module, "PLUGINS_JSON", plugins_path)
     monkeypatch.setattr(compile_module, "MARKETPLACE_JSON", marketplace_path)
 
     # input() should not be called.
     def _no_input(*_a, **_kw):  # pragma: no cover - defensive
         raise AssertionError("input() should not be called when no changes")
+
     monkeypatch.setattr("builtins.input", _no_input)
 
     pre_mtime = settings_path.stat().st_mtime_ns
@@ -188,14 +180,8 @@ def test_already_correct_state_no_changes(
 
 
 # --------------------------------------------------------------------------- 5
-def test_path_mismatch_shown_in_diff(
-    tmp_path: Path, monkeypatch, capsys
-) -> None:
-    existing = {
-        "extraKnownMarketplaces": {
-            "agora": {"source": "directory", "path": "C:/old/path"}
-        }
-    }
+def test_path_mismatch_shown_in_diff(tmp_path: Path, monkeypatch, capsys) -> None:
+    existing = {"extraKnownMarketplaces": {"agora": {"source": "directory", "path": "C:/old/path"}}}
     settings_path, repo_root, _, _ = _setup_env(
         tmp_path, monkeypatch, json.dumps(existing, indent=2)
     )
@@ -208,9 +194,7 @@ def test_path_mismatch_shown_in_diff(
     assert _expected_agora_path(repo_root) in out
 
     data = json.loads(settings_path.read_text(encoding="utf-8"))
-    assert data["extraKnownMarketplaces"]["agora"]["path"] == _expected_agora_path(
-        repo_root
-    )
+    assert data["extraKnownMarketplaces"]["agora"]["path"] == _expected_agora_path(repo_root)
 
 
 # --------------------------------------------------------------------------- 6
@@ -235,9 +219,7 @@ def test_confirmation_accepted(tmp_path: Path, monkeypatch, capsys) -> None:
     rc = agora_setup.run_setup(yes=False)
     assert rc == 0
     data = json.loads(settings_path.read_text(encoding="utf-8"))
-    assert data["extraKnownMarketplaces"]["agora"]["path"] == _expected_agora_path(
-        repo_root
-    )
+    assert data["extraKnownMarketplaces"]["agora"]["path"] == _expected_agora_path(repo_root)
 
 
 # --------------------------------------------------------------------------- 8
@@ -246,6 +228,7 @@ def test_yes_flag_skips_prompt(tmp_path: Path, monkeypatch) -> None:
 
     def _no_input(*_a, **_kw):  # pragma: no cover - defensive
         raise AssertionError("input() must not be called with --yes")
+
     monkeypatch.setattr("builtins.input", _no_input)
 
     rc = agora_setup.run_setup(yes=True)
@@ -254,13 +237,9 @@ def test_yes_flag_skips_prompt(tmp_path: Path, monkeypatch) -> None:
 
 
 # --------------------------------------------------------------------------- 9
-def test_backup_created_when_overwriting(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_backup_created_when_overwriting(tmp_path: Path, monkeypatch) -> None:
     existing = {"theme": "dark"}
-    settings_path, _, _, _ = _setup_env(
-        tmp_path, monkeypatch, json.dumps(existing, indent=2)
-    )
+    settings_path, _, _, _ = _setup_env(tmp_path, monkeypatch, json.dumps(existing, indent=2))
 
     rc = agora_setup.run_setup(yes=True)
     assert rc == 0
@@ -295,9 +274,7 @@ def test_initial_compile_runs(tmp_path: Path, monkeypatch) -> None:
 
 
 # -------------------------------------------------------------------------- 11
-def test_malformed_existing_settings(
-    tmp_path: Path, monkeypatch, capsys
-) -> None:
+def test_malformed_existing_settings(tmp_path: Path, monkeypatch, capsys) -> None:
     _setup_env(tmp_path, monkeypatch, "{not valid json")
 
     with pytest.raises(SystemExit) as exc:

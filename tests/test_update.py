@@ -1,15 +1,14 @@
 # tests/test_update.py
 """Tests for scripts.update (agora:update)."""
+
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 import pytest
 
 from scripts import git_helpers, registry, update
 from scripts.git_helpers import GitError
-
 
 SHA_ATELIER_OLD = "a" * 40
 SHA_ATELIER_NEW = "b" * 40
@@ -63,6 +62,7 @@ def patched_paths(tmp_path, monkeypatch):
     monkeypatch.setattr(registry, "MARKETPLACE_JSON", marketplace_path)
     # Some code paths import via scripts.paths; keep those in sync just in case.
     from scripts import paths as paths_mod
+
     monkeypatch.setattr(paths_mod, "PLUGINS_JSON", plugins_path)
     monkeypatch.setattr(paths_mod, "MARKETPLACE_JSON", marketplace_path)
 
@@ -92,6 +92,7 @@ def _patch_tags(monkeypatch, mapping: dict):
     mapping: {url -> dict_or_exception}. If the value is an Exception
     instance, it is raised.
     """
+
     def fake(url, timeout=30):
         if url not in mapping:
             raise GitError(f"unexpected url: {url}")
@@ -108,12 +109,15 @@ def _patch_tags(monkeypatch, mapping: dict):
 # --------------------------------------------------------------------------- 1
 def test_single_plugin_newer_tag_updates(patched_paths, monkeypatch, capsys):
     plugins_path, marketplace_path = patched_paths
-    _patch_tags(monkeypatch, {
-        "https://github.com/nitekeeper/atelier.git": {
-            "v1.0.0": SHA_ATELIER_OLD,
-            "v1.3.0": SHA_ATELIER_NEW,
+    _patch_tags(
+        monkeypatch,
+        {
+            "https://github.com/nitekeeper/atelier.git": {
+                "v1.0.0": SHA_ATELIER_OLD,
+                "v1.3.0": SHA_ATELIER_NEW,
+            },
         },
-    })
+    )
 
     rc = update.main(["atelier"])
     assert rc == 0
@@ -136,11 +140,14 @@ def test_single_plugin_newer_tag_updates(patched_paths, monkeypatch, capsys):
 # --------------------------------------------------------------------------- 2
 def test_single_plugin_up_to_date(patched_paths, monkeypatch, capsys):
     plugins_path, _ = patched_paths
-    _patch_tags(monkeypatch, {
-        "https://github.com/nitekeeper/atelier.git": {
-            "v1.0.0": SHA_ATELIER_OLD,
+    _patch_tags(
+        monkeypatch,
+        {
+            "https://github.com/nitekeeper/atelier.git": {
+                "v1.0.0": SHA_ATELIER_OLD,
+            },
         },
-    })
+    )
 
     before = plugins_path.read_text(encoding="utf-8")
     rc = update.main(["atelier"])
@@ -160,27 +167,32 @@ def test_all_mixed_states(patched_paths, monkeypatch, capsys):
     plugins_path, _ = patched_paths
     # Add a third plugin that will hit a network error.
     data = json.loads(plugins_path.read_text(encoding="utf-8"))
-    data["plugins"].append({
-        "name": "foo",
-        "repository_url": "https://github.com/nitekeeper/foo.git",
-        "current_version": "v0.1.0",
-        "current_sha": "e" * 40,
-        "description": "foo",
-        "registered_at": "2026-05-03T00:00:00Z",
-        "updated_at": "2026-05-03T00:00:00Z",
-    })
+    data["plugins"].append(
+        {
+            "name": "foo",
+            "repository_url": "https://github.com/nitekeeper/foo.git",
+            "current_version": "v0.1.0",
+            "current_sha": "e" * 40,
+            "description": "foo",
+            "registered_at": "2026-05-03T00:00:00Z",
+            "updated_at": "2026-05-03T00:00:00Z",
+        }
+    )
     plugins_path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
-    _patch_tags(monkeypatch, {
-        "https://github.com/nitekeeper/atelier.git": {
-            "v1.0.0": SHA_ATELIER_OLD,
-            "v1.3.0": SHA_ATELIER_NEW,
+    _patch_tags(
+        monkeypatch,
+        {
+            "https://github.com/nitekeeper/atelier.git": {
+                "v1.0.0": SHA_ATELIER_OLD,
+                "v1.3.0": SHA_ATELIER_NEW,
+            },
+            "https://github.com/nitekeeper/memex.git": {
+                "v0.3.1": SHA_MEMEX,
+            },
+            "https://github.com/nitekeeper/foo.git": GitError("network down"),
         },
-        "https://github.com/nitekeeper/memex.git": {
-            "v0.3.1": SHA_MEMEX,
-        },
-        "https://github.com/nitekeeper/foo.git": GitError("network down"),
-    })
+    )
 
     rc = update.main(["--all"])
     assert rc == 0
@@ -203,10 +215,13 @@ def test_all_mixed_states(patched_paths, monkeypatch, capsys):
 
 # --------------------------------------------------------------------------- 4
 def test_all_up_to_date(patched_paths, monkeypatch, capsys):
-    _patch_tags(monkeypatch, {
-        "https://github.com/nitekeeper/atelier.git": {"v1.0.0": SHA_ATELIER_OLD},
-        "https://github.com/nitekeeper/memex.git": {"v0.3.1": SHA_MEMEX},
-    })
+    _patch_tags(
+        monkeypatch,
+        {
+            "https://github.com/nitekeeper/atelier.git": {"v1.0.0": SHA_ATELIER_OLD},
+            "https://github.com/nitekeeper/memex.git": {"v0.3.1": SHA_MEMEX},
+        },
+    )
 
     rc = update.main(["--all"])
     assert rc == 0
@@ -217,12 +232,15 @@ def test_all_up_to_date(patched_paths, monkeypatch, capsys):
 # --------------------------------------------------------------------------- 5
 def test_dry_run_no_write(patched_paths, monkeypatch, capsys):
     plugins_path, marketplace_path = patched_paths
-    _patch_tags(monkeypatch, {
-        "https://github.com/nitekeeper/atelier.git": {
-            "v1.0.0": SHA_ATELIER_OLD,
-            "v1.3.0": SHA_ATELIER_NEW,
+    _patch_tags(
+        monkeypatch,
+        {
+            "https://github.com/nitekeeper/atelier.git": {
+                "v1.0.0": SHA_ATELIER_OLD,
+                "v1.3.0": SHA_ATELIER_NEW,
+            },
         },
-    })
+    )
     before = plugins_path.read_text(encoding="utf-8")
 
     rc = update.main(["atelier", "--dry-run"])
@@ -239,12 +257,15 @@ def test_dry_run_no_write(patched_paths, monkeypatch, capsys):
 # --------------------------------------------------------------------------- 6
 def test_include_prerelease(patched_paths, monkeypatch, capsys):
     plugins_path, _ = patched_paths
-    _patch_tags(monkeypatch, {
-        "https://github.com/nitekeeper/atelier.git": {
-            "v1.0.0": SHA_ATELIER_OLD,
-            "v1.1.0-rc.1": SHA_FOO_PRERELEASE,
+    _patch_tags(
+        monkeypatch,
+        {
+            "https://github.com/nitekeeper/atelier.git": {
+                "v1.0.0": SHA_ATELIER_OLD,
+                "v1.1.0-rc.1": SHA_FOO_PRERELEASE,
+            },
         },
-    })
+    )
 
     # Without flag: stable v1.0.0 is the latest, no update.
     rc = update.main(["atelier"])
@@ -283,13 +304,16 @@ def test_no_args_exits_1(patched_paths, capsys):
 # --------------------------------------------------------------------------- 9
 def test_all_batch_continues_on_network_failure(patched_paths, monkeypatch, capsys):
     plugins_path, _ = patched_paths
-    _patch_tags(monkeypatch, {
-        "https://github.com/nitekeeper/atelier.git": GitError("ls-remote failed"),
-        "https://github.com/nitekeeper/memex.git": {
-            "v0.3.1": SHA_MEMEX,
-            "v0.4.0": "f" * 40,
+    _patch_tags(
+        monkeypatch,
+        {
+            "https://github.com/nitekeeper/atelier.git": GitError("ls-remote failed"),
+            "https://github.com/nitekeeper/memex.git": {
+                "v0.3.1": SHA_MEMEX,
+                "v0.4.0": "f" * 40,
+            },
         },
-    })
+    )
 
     rc = update.main(["--all"])
     assert rc == 0
@@ -306,15 +330,18 @@ def test_all_batch_continues_on_network_failure(patched_paths, monkeypatch, caps
 # --------------------------------------------------------------------------- 10
 def test_updated_at_bumped_only_on_change(patched_paths, monkeypatch, capsys):
     plugins_path, _ = patched_paths
-    _patch_tags(monkeypatch, {
-        "https://github.com/nitekeeper/atelier.git": {
-            "v1.0.0": SHA_ATELIER_OLD,
-            "v1.3.0": SHA_ATELIER_NEW,
+    _patch_tags(
+        monkeypatch,
+        {
+            "https://github.com/nitekeeper/atelier.git": {
+                "v1.0.0": SHA_ATELIER_OLD,
+                "v1.3.0": SHA_ATELIER_NEW,
+            },
+            "https://github.com/nitekeeper/memex.git": {
+                "v0.3.1": SHA_MEMEX,
+            },
         },
-        "https://github.com/nitekeeper/memex.git": {
-            "v0.3.1": SHA_MEMEX,
-        },
-    })
+    )
 
     before = json.loads(plugins_path.read_text(encoding="utf-8"))
     atelier_before = next(p for p in before["plugins"] if p["name"] == "atelier")
@@ -336,45 +363,47 @@ def test_updated_at_bumped_only_on_change(patched_paths, monkeypatch, capsys):
 # --------------------------------------------------------------------------- 11
 def test_registered_at_preserved(patched_paths, monkeypatch, capsys):
     plugins_path, _ = patched_paths
-    _patch_tags(monkeypatch, {
-        "https://github.com/nitekeeper/atelier.git": {
-            "v1.0.0": SHA_ATELIER_OLD,
-            "v1.3.0": SHA_ATELIER_NEW,
+    _patch_tags(
+        monkeypatch,
+        {
+            "https://github.com/nitekeeper/atelier.git": {
+                "v1.0.0": SHA_ATELIER_OLD,
+                "v1.3.0": SHA_ATELIER_NEW,
+            },
         },
-    })
+    )
 
     before = json.loads(plugins_path.read_text(encoding="utf-8"))
-    registered_before = next(
-        p for p in before["plugins"] if p["name"] == "atelier"
-    )["registered_at"]
+    registered_before = next(p for p in before["plugins"] if p["name"] == "atelier")[
+        "registered_at"
+    ]
 
     rc = update.main(["atelier"])
     assert rc == 0
 
     after = json.loads(plugins_path.read_text(encoding="utf-8"))
-    registered_after = next(
-        p for p in after["plugins"] if p["name"] == "atelier"
-    )["registered_at"]
+    registered_after = next(p for p in after["plugins"] if p["name"] == "atelier")["registered_at"]
     assert registered_after == registered_before
 
 
 # --------------------------------------------------------------------------- 12
 def test_marketplace_reflects_new_ref_and_sha(patched_paths, monkeypatch, capsys):
     plugins_path, marketplace_path = patched_paths
-    _patch_tags(monkeypatch, {
-        "https://github.com/nitekeeper/atelier.git": {
-            "v1.0.0": SHA_ATELIER_OLD,
-            "v2.0.0": SHA_ATELIER_NEW,
+    _patch_tags(
+        monkeypatch,
+        {
+            "https://github.com/nitekeeper/atelier.git": {
+                "v1.0.0": SHA_ATELIER_OLD,
+                "v2.0.0": SHA_ATELIER_NEW,
+            },
         },
-    })
+    )
 
     rc = update.main(["atelier"])
     assert rc == 0
 
     marketplace = json.loads(marketplace_path.read_text(encoding="utf-8"))
-    mp_atelier = next(
-        p for p in marketplace["plugins"] if p["name"] == "atelier"
-    )
+    mp_atelier = next(p for p in marketplace["plugins"] if p["name"] == "atelier")
     assert mp_atelier["source"]["ref"] == "v2.0.0"
     assert mp_atelier["source"]["sha"] == SHA_ATELIER_NEW
     # And the plugins.json source-of-truth matches.

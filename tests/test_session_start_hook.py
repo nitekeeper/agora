@@ -1,5 +1,6 @@
 # tests/test_session_start_hook.py
 """Tests for hooks/session_start.py."""
+
 from __future__ import annotations
 
 import json

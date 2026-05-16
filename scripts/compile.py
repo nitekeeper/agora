@@ -6,6 +6,7 @@ UI expects: each plugin has a `source` object (instead of the flat
 repository_url/current_version/current_sha triple) and source-only fields like
 license, registered_at, updated_at are dropped.
 """
+
 from __future__ import annotations
 
 import json
@@ -45,9 +46,7 @@ def _validate_marketplace_block(data: dict) -> dict:
         raise CompileError("plugins.json missing required 'marketplace' object")
     for field in ("name", "description", "owner"):
         if field not in block:
-            raise CompileError(
-                f"plugins.json marketplace block missing required field '{field}'"
-            )
+            raise CompileError(f"plugins.json marketplace block missing required field '{field}'")
     return block
 
 
@@ -62,9 +61,7 @@ def _compile_plugin(plugin: dict) -> dict:
     for field in _REQUIRED_PLUGIN_FIELDS:
         if field not in plugin:
             name = plugin.get("name", "<unknown>")
-            raise CompileError(
-                f"plugin '{name}' missing required field '{field}'"
-            )
+            raise CompileError(f"plugin '{name}' missing required field '{field}'")
 
     out: dict = {
         "name": plugin["name"],

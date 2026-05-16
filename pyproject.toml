@@ -1,0 +1,53 @@
+# Agora has no Python package metadata (this isn't a pip-installable project —
+# it's a marketplace registry with helper scripts). This file exists solely to
+# host shared tool configuration so local runs and CI agree on the rule set.
+#
+#   Local:  ruff check --fix . && ruff format .
+#           bandit -c pyproject.toml -r scripts hooks internal
+#           pytest tests/
+#   CI:     .github/workflows/ci.yml runs the same.
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+exclude = [
+    ".git",
+    "__pycache__",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "C4",   # comprehensions
+    "UP",   # pyupgrade
+    "SIM",  # simplify
+    "RUF",  # ruff-specific
+]
+ignore = [
+    "E501",   # line-too-long — formatter handles wraps it can; long strings get a pass
+    "SIM108", # ternary-instead-of-if-else — sometimes hurts readability
+    "B008",   # function-call-in-default-arg — Path() and similar are fine as defaults
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "B011",   # assert-false — pytest uses bare assert
+    "SIM117", # nested-with — sometimes clearer in test setup
+]
+
+[tool.bandit]
+exclude_dirs = ["tests", ".github", "__pycache__"]
+# Agora is a marketplace registry that calls `git` and `gh` heavily. The
+# subprocess-related findings are intentional and uniform across every helper;
+# blanket-skipping them here is cleaner than scattering nosec everywhere.
+# Each suppressed rule has a justification, not a "make the warning go away."
+skips = [
+    "B101",   # assert_used — assertions in production code are intentional invariants
+    "B404",   # blacklist-import-subprocess — agora shells out to git/gh by design
+    "B603",   # subprocess-without-shell-equals-true — this is the *safe* form (no shell)
+    "B607",   # start-process-with-partial-path — `git` / `gh` resolve via PATH; that's intended
+]

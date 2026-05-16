@@ -1,14 +1,12 @@
 # tests/test_plugin_unregister.py
 """Tests for scripts.plugin_unregister (agora:plugin-unregister)."""
+
 from __future__ import annotations
 
 import json
 from pathlib import Path
 
-import pytest
-
 from scripts import paths, plugin_unregister
-
 
 SAMPLE_PLUGINS = {
     "$schema": "https://nitekeeper.github.io/agora/plugins.schema.json",
@@ -54,6 +52,7 @@ def _setup_registry(tmp_path: Path, monkeypatch, data: dict) -> tuple[Path, Path
     # at function-definition time), so patch the module attributes AND wrap
     # the functions to redirect to the tmp paths.
     from scripts import registry as _registry
+
     monkeypatch.setattr(_registry, "PLUGINS_JSON", plugins_path)
     monkeypatch.setattr(_registry, "MARKETPLACE_JSON", marketplace_path)
 
@@ -74,9 +73,7 @@ def _setup_registry(tmp_path: Path, monkeypatch, data: dict) -> tuple[Path, Path
 
 # --------------------------------------------------------------------------- 1
 def test_happy_path_with_yes(tmp_path: Path, monkeypatch, capsys) -> None:
-    plugins_path, marketplace_path = _setup_registry(
-        tmp_path, monkeypatch, SAMPLE_PLUGINS
-    )
+    plugins_path, marketplace_path = _setup_registry(tmp_path, monkeypatch, SAMPLE_PLUGINS)
 
     rc = plugin_unregister.main(["atelier", "--yes"])
     captured = capsys.readouterr()
@@ -139,19 +136,19 @@ def test_confirmation_declined(tmp_path: Path, monkeypatch, capsys) -> None:
 
 
 # --------------------------------------------------------------------------- 5
-def test_multiple_plugins_only_target_removed(
-    tmp_path: Path, monkeypatch, capsys
-) -> None:
+def test_multiple_plugins_only_target_removed(tmp_path: Path, monkeypatch, capsys) -> None:
     data = json.loads(json.dumps(SAMPLE_PLUGINS))
-    data["plugins"].append({
-        "name": "agora",
-        "repository_url": "https://github.com/nitekeeper/agora.git",
-        "current_version": "v0.1.0",
-        "current_sha": "0123450000000000000000000000000000000000",
-        "description": "Marketplace tooling",
-        "license": "MIT",
-        "category": "development",
-    })
+    data["plugins"].append(
+        {
+            "name": "agora",
+            "repository_url": "https://github.com/nitekeeper/agora.git",
+            "current_version": "v0.1.0",
+            "current_sha": "0123450000000000000000000000000000000000",
+            "description": "Marketplace tooling",
+            "license": "MIT",
+            "category": "development",
+        }
+    )
     plugins_path, _ = _setup_registry(tmp_path, monkeypatch, data)
 
     rc = plugin_unregister.main(["memex", "--yes"])

@@ -6,6 +6,7 @@ and runs an initial compile of marketplace.json. This is called BEFORE agora
 is enabled as a Claude Code plugin; the user enables it afterward via
 /plugins > Marketplaces > agora.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -102,7 +103,7 @@ def _plan_changes(settings: dict, agora_path: str) -> tuple[dict, list[str]]:
         old_path = existing.get("path")
         if old_source != "directory":
             diff.append("  extraKnownMarketplaces.agora.source:")
-            diff.append(f'    -   {json.dumps(old_source)}')
+            diff.append(f"    -   {json.dumps(old_source)}")
             diff.append('    +   "directory"')
         if old_path != agora_path:
             diff.append("  extraKnownMarketplaces.agora.path:")
@@ -140,9 +141,7 @@ def run_setup(yes: bool = False) -> int:
     new_settings, diff = _plan_changes(settings, agora_path)
 
     if not diff:
-        print(
-            "No changes needed to ~/.claude/settings.json (agora already registered)."
-        )
+        print("No changes needed to ~/.claude/settings.json (agora already registered).")
     else:
         for line in diff:
             print(line)
@@ -156,9 +155,7 @@ def run_setup(yes: bool = False) -> int:
         content = json.dumps(new_settings, indent=2) + "\n"
         atomic_write(settings_path, content)
         if backup is not None:
-            print(
-                f"Wrote {settings_path} (backup at {backup.name})"
-            )
+            print(f"Wrote {settings_path} (backup at {backup.name})")
         else:
             print(f"Wrote {settings_path}")
 

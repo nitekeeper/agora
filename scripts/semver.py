@@ -5,6 +5,7 @@ Strict MAJOR.MINOR.PATCH with optional -PRERELEASE; +BUILDMETADATA is parsed
 but discarded. Tags may have a leading 'v' which is stripped on parse but
 preserved by pick_latest.
 """
+
 from __future__ import annotations
 
 import re
@@ -72,9 +73,7 @@ def _cmp_ident(a: str | int, b: str | int) -> int:
     return (a > b) - (a < b)  # type: ignore[operator]
 
 
-def _cmp_prerelease(
-    a: tuple[str | int, ...], b: tuple[str | int, ...]
-) -> int:
+def _cmp_prerelease(a: tuple[str | int, ...], b: tuple[str | int, ...]) -> int:
     for ai, bi in zip(a, b):
         c = _cmp_ident(ai, bi)
         if c != 0:
@@ -107,9 +106,7 @@ def compare(a: Version, b: Version) -> int:
     return 0
 
 
-def pick_latest(
-    tags: list[str], include_prerelease: bool = False
-) -> str | None:
+def pick_latest(tags: list[str], include_prerelease: bool = False) -> str | None:
     best_tag: str | None = None
     best_ver: Version | None = None
     for tag in tags:

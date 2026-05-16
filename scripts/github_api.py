@@ -5,6 +5,7 @@ Used by agora's plugin-register/update/check operations to fetch repository
 metadata (description, topics, homepage, SPDX license id). Standard library
 only: urllib.request for HTTP, subprocess for `gh auth token`.
 """
+
 from __future__ import annotations
 
 import json
@@ -27,11 +28,13 @@ def _build_ssl_context() -> ssl.SSLContext:
     Result is cached at module load."""
     try:
         import truststore
+
         return truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
     except ImportError:
         pass
     try:
         import certifi
+
         return ssl.create_default_context(cafile=certifi.where())
     except ImportError:
         return ssl.create_default_context()
@@ -189,9 +192,7 @@ def _request_with_retry(req: urllib.request.Request) -> dict:
         if _is_rate_limited(status, headers):
             reset = _header_int(headers, "X-RateLimit-Reset")
             reset_msg = f"resets at {reset}" if reset else "reset time unknown"
-            raise GitHubAPIError(
-                f"rate limited; {reset_msg}", status=status
-            )
+            raise GitHubAPIError(f"rate limited; {reset_msg}", status=status)
 
     if 500 <= status < 600:
         time.sleep(1)
@@ -203,9 +204,7 @@ def _request_with_retry(req: urllib.request.Request) -> dict:
             )
 
     if status >= 400:
-        raise GitHubAPIError(
-            _error_message(payload, f"HTTP {status}"), status=status
-        )
+        raise GitHubAPIError(_error_message(payload, f"HTTP {status}"), status=status)
 
     return payload
 

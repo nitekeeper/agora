@@ -10,6 +10,7 @@ Derives every required field from the plugin's GitHub repo:
 Then writes plugins.json + recompiled marketplace.json atomically via
 scripts.registry.save_registry.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -22,8 +23,8 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from scripts import git_helpers, github_api, license_parser, registry, semver
-from scripts.github_api import GitHubAPIError
 from scripts.git_helpers import GitError
+from scripts.github_api import GitHubAPIError
 
 _ALLOWED_CATEGORIES = (
     "development",
@@ -102,9 +103,7 @@ def _resolve_license(clone_root: Path, owner: str, repo: str) -> str | None:
     return spdx
 
 
-def _resolve_category(
-    topics: list[str], override: str | None
-) -> str | None:
+def _resolve_category(topics: list[str], override: str | None) -> str | None:
     if override is not None:
         if override not in _ALLOWED_CATEGORIES:
             raise RegisterError(
@@ -119,9 +118,7 @@ def _resolve_category(
     return None
 
 
-def _resolve_keywords(
-    topics: list[str], category_topic: str | None
-) -> list[str]:
+def _resolve_keywords(topics: list[str], category_topic: str | None) -> list[str]:
     seen: set[str] = set()
     out: list[str] = []
     for raw in topics:
@@ -232,8 +229,7 @@ def register(
         url = git_helpers.get_local_remote_url()
         if not url:
             raise RegisterError(
-                "could not detect repository URL - pass --url or cd "
-                "into the plugin repo"
+                "could not detect repository URL - pass --url or cd into the plugin repo"
             )
 
     # 2. Parse URL
@@ -249,16 +245,12 @@ def register(
     tags = git_helpers.ls_remote_tags(url)
     if not tags:
         raise RegisterError(
-            "plugin has no release tags; tag a release "
-            "(e.g. 'git tag v1.0.0 && git push --tags')"
+            "plugin has no release tags; tag a release (e.g. 'git tag v1.0.0 && git push --tags')"
         )
-    chosen_tag = semver.pick_latest(
-        list(tags.keys()), include_prerelease=include_prerelease
-    )
+    chosen_tag = semver.pick_latest(list(tags.keys()), include_prerelease=include_prerelease)
     if chosen_tag is None:
         raise RegisterError(
-            "no stable release tag found; add a stable tag or use "
-            "--include-prerelease"
+            "no stable release tag found; add a stable tag or use --include-prerelease"
         )
     current_sha = tags[chosen_tag]
 
@@ -285,9 +277,7 @@ def register(
         raise RegisterError(f"GitHub API request failed: {e}") from e
 
     # 8. Description
-    description = _resolve_description(
-        meta.description, description_override, owner, repo
-    )
+    description = _resolve_description(meta.description, description_override, owner, repo)
 
     # 9. Category (validates override)
     topics = list(meta.topics or [])

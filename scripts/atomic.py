@@ -5,6 +5,7 @@ Provides single-file and atomic-pair writes built on temp file + os.replace.
 On Windows, os.replace can fail with PermissionError if another process briefly
 holds the destination open; we retry with exponential backoff.
 """
+
 from __future__ import annotations
 
 import os

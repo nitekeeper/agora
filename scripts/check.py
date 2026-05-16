@@ -11,6 +11,7 @@ Honors a 24-hour TTL by default; pass `--force` to refresh anyway. Use
 progress output for the full cache dict on stdout (cache file is still
 written).
 """
+
 from __future__ import annotations
 
 import argparse
@@ -81,9 +82,7 @@ def _check_one(
         entry["error"] = str(e)
         entry["checked_at"] = _now_iso_z()
         return entry
-    latest = semver.pick_latest(
-        list(tags.keys()), include_prerelease=include_prerelease
-    )
+    latest = semver.pick_latest(list(tags.keys()), include_prerelease=include_prerelease)
     entry["latest_version"] = latest
     entry["checked_at"] = _now_iso_z()
     return entry
@@ -93,8 +92,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="agora:check",
         description=(
-            "Refresh the local 'latest available version' cache for every "
-            "registered plugin."
+            "Refresh the local 'latest available version' cache for every registered plugin."
         ),
     )
     parser.add_argument(
@@ -192,10 +190,7 @@ def main(argv: list[str] | None = None) -> int:
         sys.stdout.write(json.dumps(cache, indent=2))
         sys.stdout.write("\n")
     else:
-        print(
-            f"Checked {len(per_plugin)} plugin(s) — "
-            f"{outdated} outdated, {errors} errors."
-        )
+        print(f"Checked {len(per_plugin)} plugin(s) — {outdated} outdated, {errors} errors.")
     return 0
 
 

@@ -1,7 +1,5 @@
 # tests/test_git_helpers.py
 import subprocess
-from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 
@@ -11,17 +9,20 @@ from scripts import git_helpers as gh
 class TestParseUrl:
     def test_basic(self):
         assert gh.parse_github_url("https://github.com/nitekeeper/atelier.git") == (
-            "nitekeeper", "atelier"
+            "nitekeeper",
+            "atelier",
         )
 
     def test_no_git_suffix(self):
         assert gh.parse_github_url("https://github.com/nitekeeper/atelier") == (
-            "nitekeeper", "atelier"
+            "nitekeeper",
+            "atelier",
         )
 
     def test_trailing_slash(self):
         assert gh.parse_github_url("https://github.com/nitekeeper/atelier/") == (
-            "nitekeeper", "atelier"
+            "nitekeeper",
+            "atelier",
         )
 
     def test_invalid(self):
@@ -36,7 +37,9 @@ def test_plugin_name_lowercase():
 
 class TestLsRemoteTags:
     def _mock_result(self, stdout: str, returncode: int = 0):
-        return subprocess.CompletedProcess(args=["git"], returncode=returncode, stdout=stdout, stderr="")
+        return subprocess.CompletedProcess(
+            args=["git"], returncode=returncode, stdout=stdout, stderr=""
+        )
 
     def test_lightweight_tags(self, monkeypatch):
         stdout = (
@@ -66,19 +69,24 @@ class TestLsRemoteTags:
 class TestLocalRemote:
     def test_returns_url(self, monkeypatch):
         def fake_run(*a, **kw):
-            return subprocess.CompletedProcess(args=[], returncode=0, stdout="https://x/y.git\n", stderr="")
+            return subprocess.CompletedProcess(
+                args=[], returncode=0, stdout="https://x/y.git\n", stderr=""
+            )
+
         monkeypatch.setattr(subprocess, "run", fake_run)
         assert gh.get_local_remote_url() == "https://x/y.git"
 
     def test_no_origin(self, monkeypatch):
         def fake_run(*a, **kw):
             return subprocess.CompletedProcess(args=[], returncode=128, stdout="", stderr="error")
+
         monkeypatch.setattr(subprocess, "run", fake_run)
         assert gh.get_local_remote_url() is None
 
     def test_git_not_found(self, monkeypatch):
         def fake_run(*a, **kw):
             raise FileNotFoundError()
+
         monkeypatch.setattr(subprocess, "run", fake_run)
         assert gh.get_local_remote_url() is None
 
@@ -86,6 +94,7 @@ class TestLocalRemote:
 def test_shallow_clone_failure(monkeypatch, tmp_path):
     def fake(*a, **kw):
         return subprocess.CompletedProcess(args=[], returncode=128, stdout="", stderr="not found")
+
     monkeypatch.setattr(gh, "_run", fake)
     with pytest.raises(gh.GitError):
         gh.shallow_clone("url", "v1.0.0", tmp_path / "dest")

@@ -5,15 +5,14 @@ Inspects the first ~2KB of a license file and matches against a table of
 known fingerprints. Honors an explicit SPDX-License-Identifier header when
 present.
 """
+
 from __future__ import annotations
 
 import re
 from pathlib import Path
 
 _HEAD_BYTES = 2048
-_SPDX_RE = re.compile(
-    r"SPDX-License-Identifier:\s*([A-Za-z0-9.\-+]+)", re.IGNORECASE
-)
+_SPDX_RE = re.compile(r"SPDX-License-Identifier:\s*([A-Za-z0-9.\-+]+)", re.IGNORECASE)
 
 
 def _has(haystack: str, needle: str) -> bool:

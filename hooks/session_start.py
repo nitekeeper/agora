@@ -10,6 +10,7 @@ This hook MUST NEVER block session start. Any exception during a check is
 swallowed (with a one-line stderr warning) so Claude Code's session still
 proceeds.
 """
+
 from __future__ import annotations
 
 import json
@@ -43,7 +44,7 @@ def check_staleness() -> None:
         marketplace_mtime = marketplace_path.stat().st_mtime
         if plugins_mtime > marketplace_mtime:
             compile.compile_to_disk()
-    except Exception as e:  # noqa: BLE001 - hook must never raise
+    except Exception as e:
         print(f"agora session-start hook: {e}", file=sys.stderr)
 
 
@@ -91,7 +92,7 @@ def show_update_banner() -> None:
             print(f"  {name.ljust(name_width)}  {current} -> {latest}")
         print()
         print("Run `agora:update --all` to upgrade, or `agora:check` to refresh the cache.")
-    except Exception as e:  # noqa: BLE001 - banner must never raise
+    except Exception as e:
         print(f"agora session-start banner: {e}", file=sys.stderr)
 
 

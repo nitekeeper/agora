@@ -5,6 +5,7 @@ Looks up the plugin by name, prints the entry to be removed, asks for
 confirmation (unless --yes is passed), deletes the entry, and atomically
 re-compiles marketplace.json via registry.save_registry().
 """
+
 from __future__ import annotations
 
 import argparse
