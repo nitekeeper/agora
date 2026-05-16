@@ -2,7 +2,7 @@
 description: Use when registering agora in ~/.claude/settings.json after the initial install — useful for re-running bootstrap on a second machine, after settings.json corruption, or after the agora repo has been moved. For the very first install, run `python scripts/setup.py` directly from the agora directory.
 ---
 
-# agora:setup
+# setup
 
 Re-runs the agora bootstrap, which registers the agora marketplace in `~/.claude/settings.json` under `extraKnownMarketplaces.agora` and triggers an initial compile. Wraps `scripts/setup.py` for discoverable post-install invocation.
 

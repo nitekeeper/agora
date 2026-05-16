@@ -44,4 +44,4 @@ Write skills (`plugin-register`, `plugin-unregister`, `update`) should ideally c
 
 - Exit code 0 means valid; exit code 1 means invalid. `--json` only changes output format, never the exit code.
 - This skill is read-only — it never writes `plugins.json`, `marketplace.json`, or any other file.
-- Run `agora:validate` after every manual edit to `plugins.json` and before every commit that touches it.
+- Run `internal/validate/SKILL.md` after every manual edit to `plugins.json` and before every commit that touches it.

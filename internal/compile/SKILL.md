@@ -22,4 +22,4 @@ Call `compile` after hand-editing `plugins.json` (for example, fixing a typo, tw
 ## Hard rules
 
 - Never hand-edit `.claude-plugin/marketplace.json`. It is regenerated and gitignored.
-- Always run `agora:validate` after a manual edit and compile so schema and uniqueness checks pass before Claude Code reads the result.
+- Always run `internal/validate/SKILL.md` after a manual edit and compile so schema and uniqueness checks pass before Claude Code reads the result.

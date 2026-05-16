@@ -13,7 +13,7 @@ Call `update` when:
 - You want to refresh every plugin in one sweep (e.g. weekly maintenance).
 - You want to preview what would change without writing (`--dry-run`).
 
-For ad-hoc edits to `plugins.json`, use `agora:compile` instead — `update` only changes pinned version/sha fields.
+For ad-hoc edits to `plugins.json`, use `internal/compile/SKILL.md` instead — `update` only changes pinned version/sha fields.
 
 ## Procedure
 

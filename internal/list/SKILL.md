@@ -2,14 +2,14 @@
 description: Use when you want to see what plugins are registered in the local agora marketplace and optionally which ones have updates available.
 ---
 
-# agora:list
+# list
 
 Prints a summary of every plugin registered in `plugins.json`. Mirrors the look-and-feel of `brew list` / `apt list` / `npm list`: a two-space-separated columnar table by default, with optional `--check` for outdated-status and `--json` for machine consumption.
 
 ## When to use
 
 - Quick local inventory: which plugins are tracked in this marketplace?
-- Pre-update audit: `--check` reads the `agora:check` cache and shows which plugins have newer upstream releases.
+- Pre-update audit: `--check` reads the `internal/check/SKILL.md` cache and shows which plugins have newer upstream releases.
 - Scripting / piping: `--json` emits the raw plugin array suitable for `jq` and friends.
 
 ## Procedure
@@ -32,7 +32,7 @@ If `plugins.json` is empty, prints `(no plugins registered)`.
 
 ### Outdated check — `python scripts/list_plugins.py --check`
 
-Reads `~/.agora/check-cache.json` (populated by `agora:check`) and adds `LATEST` / `STATUS` columns:
+Reads `~/.agora/check-cache.json` (populated by `internal/check/SKILL.md`) and adds `LATEST` / `STATUS` columns:
 
 ```
 NAME        CURRENT   LATEST    STATUS
@@ -46,7 +46,7 @@ Status values:
 - `outdated` — versions differ
 - `unknown` — no cache entry for this plugin
 
-If the cache file is missing or malformed, a one-line warning is written to stderr (`agora:check cache not found at … — run python scripts/check.py to refresh`) and every row falls back to `unknown`. Cache problems never raise; they only degrade the output.
+If the cache file is missing or malformed, a one-line warning is written to stderr (`check cache not found at … — run python scripts/check.py to refresh`) and every row falls back to `unknown`. Cache problems never raise; they only degrade the output.
 
 `--outdated` is accepted as an alias for `--check`.
 

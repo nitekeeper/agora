@@ -2,7 +2,7 @@
 description: Use when refreshing the local "latest available version" cache for all registered plugins. Read by the session-start update banner.
 ---
 
-# agora:check
+# check
 
 Refreshes `~/.agora/check-cache.json` — the local cache of the highest semver tag available upstream for every plugin in `plugins.json`. The session-start update banner reads this cache so it can flag available upgrades without going to the network on every prompt.
 
