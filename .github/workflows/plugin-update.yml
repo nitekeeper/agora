@@ -25,27 +25,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Validate payload
+        env:
+          # Pass client_payload values via env, never inline-interpolate them
+          # into a `run:` script. Inline interpolation happens before bash
+          # sees the script, so a malicious dispatch payload could break out
+          # of single quotes and inject arbitrary commands. Env-var passing
+          # routes the value through process environment, where bash can
+          # never re-parse it as code.
+          PLUGIN: ${{ github.event.client_payload.plugin }}
         run: |
-          plugin='${{ github.event.client_payload.plugin }}'
-          if [ -z "$plugin" ]; then
+          if [ -z "$PLUGIN" ]; then
             echo "::error::client_payload.plugin is required"
             exit 1
           fi
           # Basic safety: plugin name must look like a registered plugin id.
           # Whitelist [a-z][a-z0-9-]* — matches what agora's naming rules allow.
-          if ! echo "$plugin" | grep -qE '^[a-z][a-z0-9-]*$'; then
-            echo "::error::invalid plugin name: $plugin"
+          if ! echo "$PLUGIN" | grep -qE '^[a-z][a-z0-9-]*$'; then
+            echo "::error::invalid plugin name: $PLUGIN"
             exit 1
           fi
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           fetch-depth: 0
           # We manage git auth ourselves below so the PAT-based auth doesn't
           # collide with the credential checkout would otherwise persist.
           persist-credentials: false
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
         with:
           python-version: '3.11'
           cache: pip
@@ -81,14 +88,16 @@ jobs:
           # plugin repos. Falls back to default GITHUB_TOKEN if the PAT isn't
           # configured yet (public-only plugin set, or pre-Option-B setup).
           GITHUB_TOKEN: ${{ secrets.PLUGIN_REPOS_READ_TOKEN || secrets.GITHUB_TOKEN }}
+          # client_payload.plugin via env — see "Validate payload" step for
+          # the no-inline-interpolation rationale.
+          PLUGIN: ${{ github.event.client_payload.plugin }}
         run: |
-          plugin='${{ github.event.client_payload.plugin }}'
-          python scripts/update.py "$plugin"
+          python scripts/update.py "$PLUGIN"
           if [ -n "$(git status --porcelain plugins.json .claude-plugin/marketplace.json)" ]; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
           else
             echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "No version change for $plugin; nothing to PR."
+            echo "No version change for $PLUGIN; nothing to PR."
           fi
 
       - name: Swap extraheader to GITHUB_TOKEN for the push
@@ -107,24 +116,36 @@ jobs:
         if: steps.update.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # client_payload values via env — see "Validate payload" step for
+          # the no-inline-interpolation rationale. Both PLUGIN and TAG are
+          # client-controlled; only PLUGIN is regex-validated upstream, so
+          # TAG must not be interpolated as code under any circumstances.
+          PLUGIN: ${{ github.event.client_payload.plugin }}
+          TAG: ${{ github.event.client_payload.tag }}
         run: |
-          plugin='${{ github.event.client_payload.plugin }}'
-          tag='${{ github.event.client_payload.tag }}'
-          branch="auto-update/${plugin}-$(date -u +%Y%m%d-%H%M%S)"
+          # Re-validate TAG as a defense-in-depth measure (the upstream
+          # validate step only checks PLUGIN). A real GitHub tag looks like
+          # v1.2.3, possibly with a -pre.1 suffix; lock it to that shape
+          # before letting it near a shell or git command.
+          if [ -n "$TAG" ] && ! echo "$TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+([.-][A-Za-z0-9.-]+)?$'; then
+            echo "::error::invalid tag: $TAG"
+            exit 1
+          fi
+          branch="auto-update/${PLUGIN}-$(date -u +%Y%m%d-%H%M%S)"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git checkout -b "$branch"
           git add plugins.json .claude-plugin/marketplace.json
-          if [ -n "$tag" ]; then
-            git commit -m "auto-update: bump $plugin to $tag"
-            title="auto-update: bump $plugin to $tag"
+          if [ -n "$TAG" ]; then
+            git commit -m "auto-update: bump $PLUGIN to $TAG"
+            title="auto-update: bump $PLUGIN to $TAG"
           else
-            git commit -m "auto-update: bump $plugin"
-            title="auto-update: bump $plugin"
+            git commit -m "auto-update: bump $PLUGIN"
+            title="auto-update: bump $PLUGIN"
           fi
           git push -u origin "$branch"
           gh pr create \
             --base main \
             --head "$branch" \
             --title "$title" \
-            --body "Automated bump triggered by ${plugin}'s release workflow via repository_dispatch (plugin-released event). See .github/workflows/plugin-update.yml."
+            --body "Automated bump triggered by ${PLUGIN}'s release workflow via repository_dispatch (plugin-released event). See .github/workflows/plugin-update.yml."
