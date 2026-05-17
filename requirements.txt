@@ -8,5 +8,5 @@ jsonschema>=4.26.0
 # truststore uses the OS-native cert store (preferred on Windows where
 # Python's bundled OpenSSL can't always validate GitHub's chain).
 # certifi is the fallback CA bundle.
-truststore>=0.9
+truststore>=0.10.4
 certifi>=2026.4.22
