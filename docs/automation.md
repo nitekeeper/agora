@@ -81,11 +81,31 @@ That's the whole plugin-side piece. No build, no Python, no install — just a o
 
 If the plugin's version was already pinned to the new tag (e.g., you re-fired the dispatch), the workflow logs *No version change* and skips the PR.
 
+## Private plugin repos — extra setup
+
+If your plugin repos are private, agora's `plugin-update.yml` workflow needs read access to them so `scripts/update.py` can fetch tags via `git ls-remote`. The default `GITHUB_TOKEN` agora's workflow uses is scoped to the agora repo only — it cannot read other private repos, even ones you own.
+
+The fix is a **second fine-grained PAT** stored in **agora**:
+
+1. Create a new fine-grained PAT.
+   - **Repository access:** *Only select repositories* → choose **every private plugin repo** (e.g. `nitekeeper/memex`, `nitekeeper/atelier`).
+   - **Permissions:** *Contents: Read-only* and *Metadata: Read-only*.
+2. Store the token as a secret in **agora** (not the plugin repos): *Settings → Secrets and variables → Actions → New repository secret*.
+   - Name: `PLUGIN_REPOS_READ_TOKEN`.
+   - Value: paste the token.
+
+That's all — `plugin-update.yml` already reads this secret automatically. When the secret is set, it configures git to embed the PAT into `https://github.com/...` URLs (via `insteadOf`), and `scripts/update.py` then has read access to the plugin repos. When the secret is missing (e.g., all plugins are public), the workflow falls back to anonymous git access, which works fine for public repos.
+
+This token is separate from the per-plugin `AGORA_DISPATCH_TOKEN` because their scopes are opposite:
+  - `AGORA_DISPATCH_TOKEN` lives in plugin repos, has access to agora — for plugin → agora notifications.
+  - `PLUGIN_REPOS_READ_TOKEN` lives in agora, has access to plugin repos — for agora → plugin tag reads.
+
+Two narrow tokens; if either leaks, the blast radius is bounded to one direction.
+
 ## Limitations
 
 - **Pre-release tags are skipped** by `agora:update` per agora's default policy. Firing a dispatch for a `v1.0.0-rc.1` tag still triggers the workflow, but the script logs "no version change" and no PR is opened. Pass `--include-prerelease` in the workflow if you want them.
-- **Private plugin repos** require the dispatch token to have read access to the plugin repo too, so agora's `scripts/update.py` can fetch tags. Update the PAT's repository access list and re-set the secret.
-- **Token rotation** — when the PAT expires, you'll see the plugin-side workflow fail with `Bad credentials`. Rotate the token in your GitHub account settings and re-paste it as `AGORA_DISPATCH_TOKEN` in each plugin repo.
+- **Token rotation** — when either PAT expires, the affected workflow fails with `Bad credentials`. Rotate via *GitHub → Settings → Developer settings → Fine-grained tokens*, then re-paste the new value in the same secret name.
 
 ## Alternative: pull-based (no PAT)
 
