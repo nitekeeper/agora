@@ -55,29 +55,30 @@ jobs:
 
       - name: Configure git auth for private plugin repos
         # scripts/update.py invokes `git ls-remote` against the plugin's repo
-        # URL. Bare https://github.com/... URLs are anonymous and fail on
-        # private repos. Configure a global insteadOf rule that rewrites every
-        # github.com URL to embed the PAT credential, so ls-remote authenticates
-        # as the token's owner (you) and inherits read access to your private
-        # plugin repos. The default GITHUB_TOKEN is scoped to this repo only;
-        # PLUGIN_REPOS_READ_TOKEN is the fine-grained PAT covering memex / atelier.
+        # URL. Bare https://github.com/... URLs fail with "Repository not
+        # found" on private repos when authenticated as agora's GITHUB_TOKEN
+        # (which has no access to the plugin repos).
         #
-        # The rewrite is in-memory git config only — it lives for this job step
-        # and disappears when the runner is destroyed.
+        # Replace the extraheader actions/checkout configured with one that
+        # uses PLUGIN_REPOS_READ_TOKEN — a fine-grained PAT covering the
+        # private plugin repos. Earlier attempts using url.insteadOf alongside
+        # the existing extraheader lost the auth-precedence fight: git sent
+        # both credentials and GitHub used whichever-came-first, which was
+        # agora's token. Swapping the extraheader value directly removes that
+        # ambiguity — there's exactly one Authorization header git can send
+        # for github.com URLs, and it's our PAT.
         env:
           PLUGIN_TOKEN: ${{ secrets.PLUGIN_REPOS_READ_TOKEN }}
         run: |
           if [ -z "$PLUGIN_TOKEN" ]; then
             echo "::warning::PLUGIN_REPOS_READ_TOKEN secret not set — ls-remote will use anonymous access. Private plugin repos will fail."
           else
-            # actions/checkout sets a per-URL extraheader in .git/config with
-            # agora's GITHUB_TOKEN — that token can't read other private repos,
-            # so it MUST be unset before the insteadOf rewrite can do its job.
-            # If both remain, git sends the wrong credentials and ls-remote
-            # fails with "Repository not found" (GitHub's deliberately-vague
-            # 404 for auth failures on private repos).
-            git config --local --unset-all http.https://github.com/.extraheader 2>/dev/null || true
-            git config --global "url.https://x-access-token:${PLUGIN_TOKEN}@github.com/.insteadOf" "https://github.com/"
+            auth=$(printf 'x-access-token:%s' "$PLUGIN_TOKEN" | base64 -w0)
+            # --replace-all overwrites any existing value at this key (the one
+            # actions/checkout wrote with agora's GITHUB_TOKEN).
+            git config --local --replace-all http.https://github.com/.extraheader "AUTHORIZATION: basic $auth"
+            # Diagnostic: show that the extraheader is set (value redacted).
+            echo "Configured http.https://github.com/.extraheader with PAT-based basic auth."
           fi
 
       - name: Run scripts/update.py
