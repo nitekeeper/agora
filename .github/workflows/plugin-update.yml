@@ -70,6 +70,13 @@ jobs:
           if [ -z "$PLUGIN_TOKEN" ]; then
             echo "::warning::PLUGIN_REPOS_READ_TOKEN secret not set — ls-remote will use anonymous access. Private plugin repos will fail."
           else
+            # actions/checkout sets a per-URL extraheader in .git/config with
+            # agora's GITHUB_TOKEN — that token can't read other private repos,
+            # so it MUST be unset before the insteadOf rewrite can do its job.
+            # If both remain, git sends the wrong credentials and ls-remote
+            # fails with "Repository not found" (GitHub's deliberately-vague
+            # 404 for auth failures on private repos).
+            git config --local --unset-all http.https://github.com/.extraheader 2>/dev/null || true
             git config --global "url.https://x-access-token:${PLUGIN_TOKEN}@github.com/.insteadOf" "https://github.com/"
           fi
 
