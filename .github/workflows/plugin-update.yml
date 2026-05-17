@@ -53,13 +53,34 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Configure git auth for private plugin repos
+        # scripts/update.py invokes `git ls-remote` against the plugin's repo
+        # URL. Bare https://github.com/... URLs are anonymous and fail on
+        # private repos. Configure a global insteadOf rule that rewrites every
+        # github.com URL to embed the PAT credential, so ls-remote authenticates
+        # as the token's owner (you) and inherits read access to your private
+        # plugin repos. The default GITHUB_TOKEN is scoped to this repo only;
+        # PLUGIN_REPOS_READ_TOKEN is the fine-grained PAT covering memex / atelier.
+        #
+        # The rewrite is in-memory git config only — it lives for this job step
+        # and disappears when the runner is destroyed.
+        env:
+          PLUGIN_TOKEN: ${{ secrets.PLUGIN_REPOS_READ_TOKEN }}
+        run: |
+          if [ -z "$PLUGIN_TOKEN" ]; then
+            echo "::warning::PLUGIN_REPOS_READ_TOKEN secret not set — ls-remote will use anonymous access. Private plugin repos will fail."
+          else
+            git config --global "url.https://x-access-token:${PLUGIN_TOKEN}@github.com/.insteadOf" "https://github.com/"
+          fi
+
       - name: Run scripts/update.py
         id: update
         env:
-          # update.py talks to the GitHub API for tag resolution; the default
-          # token has read access to public repos and to this repo. If a
-          # plugin repo is private, the dispatcher needs a token with access.
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # update.py also talks to the GitHub REST API (description fetch, tag
+          # SHA resolution). Same PAT — it carries Contents+Metadata read on the
+          # plugin repos. Falls back to default GITHUB_TOKEN if the PAT isn't
+          # configured yet (public-only plugin set, or pre-Option-B setup).
+          GITHUB_TOKEN: ${{ secrets.PLUGIN_REPOS_READ_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
           plugin='${{ github.event.client_payload.plugin }}'
           python scripts/update.py "$plugin"
