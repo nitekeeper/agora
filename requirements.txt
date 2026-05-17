@@ -2,7 +2,7 @@
 # stdlib covers almost everything; these two handle real-world TLS on Windows.
 
 # JSON Schema Draft 2020-12 validation (used by agora:validate).
-jsonschema>=4.20
+jsonschema>=4.26.0
 
 # SSL trust roots for GitHub API requests.
 # truststore uses the OS-native cert store (preferred on Windows where
