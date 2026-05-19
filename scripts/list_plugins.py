@@ -227,10 +227,7 @@ def main(argv: list[str] | None = None) -> int:
 
     # JSON mode
     if args.as_json:
-        if args.check:
-            payload = _augment_json(plugins, cache_plugins)
-        else:
-            payload = plugins
+        payload = _augment_json(plugins, cache_plugins) if args.check else plugins
         sys.stdout.write(json.dumps(payload, indent=2, ensure_ascii=False))
         sys.stdout.write("\n")
         return 0

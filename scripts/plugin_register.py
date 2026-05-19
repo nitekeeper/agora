@@ -155,10 +155,7 @@ def _category_topic(
 def _resolve_description(
     meta_description: str | None, override: str | None, owner: str, repo: str
 ) -> str:
-    if override is not None:
-        desc = override.strip()
-    else:
-        desc = (meta_description or "").strip()
+    desc = override.strip() if override is not None else (meta_description or "").strip()
     if not desc:
         raise RegisterError(
             f"GitHub repo description is empty - set it at "

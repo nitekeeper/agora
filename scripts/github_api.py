@@ -143,10 +143,7 @@ def _error_message(payload: dict, fallback: str) -> str:
 def _rate_limit_wait(headers) -> int:
     reset = _header_int(headers, "X-RateLimit-Reset")
     now = int(time.time())
-    if reset is None:
-        wait = 1
-    else:
-        wait = max(1, reset - now)
+    wait = 1 if reset is None else max(1, reset - now)
     return min(wait, _MAX_RATE_WAIT_SECS)
 
 
@@ -247,10 +244,7 @@ def get_repo_metadata(owner: str, repo: str) -> RepoMetadata:
         topics = []
 
     license_obj = payload.get("license")
-    if isinstance(license_obj, dict):
-        license_spdx_id = license_obj.get("spdx_id")
-    else:
-        license_spdx_id = None
+    license_spdx_id = license_obj.get("spdx_id") if isinstance(license_obj, dict) else None
 
     return RepoMetadata(
         description=description,

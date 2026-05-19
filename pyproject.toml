@@ -29,14 +29,6 @@ select = [
 ]
 ignore = [
     "E501",   # line-too-long — formatter handles wraps it can; long strings get a pass
-    "SIM108", # ternary-instead-of-if-else — sometimes hurts readability
-    "B008",   # function-call-in-default-arg — Path() and similar are fine as defaults
-]
-
-[tool.ruff.lint.per-file-ignores]
-"tests/**" = [
-    "B011",   # assert-false — pytest uses bare assert
-    "SIM117", # nested-with — sometimes clearer in test setup
 ]
 
 [tool.bandit]
