@@ -11,8 +11,8 @@
     {
       "name": "atelier",
       "repository_url": "https://github.com/nitekeeper/atelier.git",
-      "current_version": "v1.1.0",
-      "current_sha": "8696caf52c4e33e78aa926653d4853036baaff45",
+      "current_version": "v1.1.1",
+      "current_sha": "f2ea3c68b70d40b6a543d835c2c475f166799a01",
       "description": "Shared workspace methodology and dev workflow for human-AI development teams",
       "license": "MIT",
       "author": {
