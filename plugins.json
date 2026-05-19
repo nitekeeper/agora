@@ -11,8 +11,8 @@
     {
       "name": "atelier",
       "repository_url": "https://github.com/nitekeeper/atelier.git",
-      "current_version": "v1.0.13",
-      "current_sha": "92fedf140454dc35aaa053c4a7df4ac0608a248b",
+      "current_version": "v1.1.0",
+      "current_sha": "8696caf52c4e33e78aa926653d4853036baaff45",
       "description": "Shared workspace methodology and dev workflow for human-AI development teams",
       "license": "MIT",
       "author": {
@@ -20,7 +20,7 @@
       },
       "homepage": "https://github.com/nitekeeper/atelier",
       "registered_at": "2026-05-15T23:40:52.358955Z",
-      "updated_at": "2026-05-16T02:19:26Z"
+      "updated_at": "2026-05-19T02:04:00Z"
     },
     {
       "name": "memex",
