@@ -16,7 +16,7 @@ Prints a summary of every plugin registered in `plugins.json`. Mirrors the look-
 
 Run from the agora repo root.
 
-### Default — `python scripts/list_plugins.py`
+### Default — `python3 scripts/list_plugins.py`
 
 Prints a columnar table of registered plugins:
 
@@ -30,7 +30,7 @@ Header is bolded via ANSI escape when stdout is a TTY; plain text when piped. Co
 
 If `plugins.json` is empty, prints `(no plugins registered)`.
 
-### Outdated check — `python scripts/list_plugins.py --check`
+### Outdated check — `python3 scripts/list_plugins.py --check`
 
 Reads `~/.agora/check-cache.json` (populated by `internal/check/SKILL.md`) and adds `LATEST` / `STATUS` columns:
 
@@ -46,11 +46,11 @@ Status values:
 - `outdated` — versions differ
 - `unknown` — no cache entry for this plugin
 
-If the cache file is missing or malformed, a one-line warning is written to stderr (`check cache not found at … — run python scripts/check.py to refresh`) and every row falls back to `unknown`. Cache problems never raise; they only degrade the output.
+If the cache file is missing or malformed, a one-line warning is written to stderr (`check cache not found at … — run python3 scripts/check.py to refresh`) and every row falls back to `unknown`. Cache problems never raise; they only degrade the output.
 
 `--outdated` is accepted as an alias for `--check`.
 
-### JSON — `python scripts/list_plugins.py --json`
+### JSON — `python3 scripts/list_plugins.py --json`
 
 Emits the `plugins[]` array verbatim to stdout. Combine with `--check` to augment each entry with `latest_version` and `status` keys. With an empty plugins array, emits `[]`.
 

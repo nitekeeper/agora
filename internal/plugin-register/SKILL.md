@@ -26,16 +26,16 @@ The target plugin's repo must have:
 1. From the agora repo root, run one of:
    ```
    # cwd is the plugin repo (origin URL auto-detected):
-   python scripts/plugin_register.py
+   python3 scripts/plugin_register.py
 
    # explicit URL (any cwd):
-   python scripts/plugin_register.py --url https://github.com/<owner>/<repo>.git
+   python3 scripts/plugin_register.py --url https://github.com/<owner>/<repo>.git
 
    # allow a -rc / -beta tag if no stable tag exists yet:
-   python scripts/plugin_register.py --url ... --include-prerelease
+   python3 scripts/plugin_register.py --url ... --include-prerelease
 
    # override description or category:
-   python scripts/plugin_register.py --description "Short tagline" --category development
+   python3 scripts/plugin_register.py --description "Short tagline" --category development
    ```
 
 2. On success the script prints `Registered <name> <version> (sha <short-sha>...)` followed by the git workflow needed to open a PR against agora.

@@ -16,7 +16,7 @@ import sys
 import time
 from pathlib import Path
 
-# Support both `python -m scripts.setup` and `python scripts/setup.py`
+# Support both `python3 -m scripts.setup` and `python3 scripts/setup.py`
 # invocations by ensuring the repo root is on sys.path for the direct case.
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))

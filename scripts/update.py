@@ -19,7 +19,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-# Support both `python -m scripts.update` and `python scripts/update.py`
+# Support both `python3 -m scripts.update` and `python3 scripts/update.py`
 # invocations by ensuring the repo root is on sys.path for the direct case.
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))

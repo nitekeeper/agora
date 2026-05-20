@@ -25,15 +25,15 @@ Write skills (`plugin-register`, `plugin-unregister`, `update`) should ideally c
 
 1. From the agora repo root, run:
    ```
-   python scripts/validate.py
+   python3 scripts/validate.py
    ```
    For release-time verification:
    ```
-   python scripts/validate.py --connectivity
+   python3 scripts/validate.py --connectivity
    ```
    For machine-readable output (CI, agent pipelines):
    ```
-   python scripts/validate.py --json
+   python3 scripts/validate.py --json
    ```
 
 2. On success the script prints `plugins.json is valid` (and `connectivity check passed` when `--connectivity` is set) and exits 0.

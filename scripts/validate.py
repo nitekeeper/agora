@@ -21,7 +21,7 @@ import sys
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-# Support both `python -m scripts.validate` and `python scripts/validate.py`
+# Support both `python3 -m scripts.validate` and `python3 scripts/validate.py`
 # invocations by ensuring the repo root is on sys.path for the direct case.
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))

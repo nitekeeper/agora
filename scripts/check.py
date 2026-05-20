@@ -21,7 +21,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-# Support both `python -m scripts.check` and `python scripts/check.py`.
+# Support both `python3 -m scripts.check` and `python3 scripts/check.py`.
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 

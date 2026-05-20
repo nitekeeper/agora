@@ -15,7 +15,7 @@ Refreshes `~/.agora/check-cache.json` — the local cache of the highest semver 
 
 Run from the agora repo root.
 
-### Default — `python scripts/check.py`
+### Default — `python3 scripts/check.py`
 
 Honors a 24-hour TTL. If `~/.agora/check-cache.json` exists and was refreshed less than 24 hours ago, prints `cache is fresh (refreshed N hours ago); use --force to refresh anyway` and exits 0 without any git calls.
 

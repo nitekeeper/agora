@@ -20,7 +20,7 @@ For ad-hoc edits to `plugins.json`, use `internal/compile/SKILL.md` instead — 
 ### Update one plugin
 
 ```
-python scripts/update.py <name>
+python3 scripts/update.py <name>
 ```
 
 Looks up `<name>` in `plugins.json`. Runs `git ls-remote --tags <repository_url>`, picks the latest stable tag, and if it is newer than `current_version`, rewrites the entry's `current_version`, `current_sha`, and `updated_at`. `marketplace.json` is recompiled in the same atomic write.
@@ -30,7 +30,7 @@ If `<name>` is not registered, the script exits 1 with `plugin not found: <name>
 ### Update every plugin
 
 ```
-python scripts/update.py --all
+python3 scripts/update.py --all
 ```
 
 Walks every entry in `plugins.json`. Each plugin is checked independently — one plugin's network failure or missing tags does not abort the batch. Per-plugin status is printed on stdout (`updated`, `up to date`, `error`), and errors are also surfaced on stderr.
@@ -38,8 +38,8 @@ Walks every entry in `plugins.json`. Each plugin is checked independently — on
 ### Preview without writing
 
 ```
-python scripts/update.py --all --dry-run
-python scripts/update.py <name> --dry-run
+python3 scripts/update.py --all --dry-run
+python3 scripts/update.py <name> --dry-run
 ```
 
 Prints the same per-plugin lines but does not touch `plugins.json` or `marketplace.json`. The summary line reads `Dry run - N plugin(s) would be updated.`
@@ -49,7 +49,7 @@ Prints the same per-plugin lines but does not touch `plugins.json` or `marketpla
 By default, tags with a pre-release suffix (e.g. `v1.0.0-rc.1`, `v2.0.0-beta.3`) are skipped during latest-tag selection. To opt in:
 
 ```
-python scripts/update.py --all --include-prerelease
+python3 scripts/update.py --all --include-prerelease
 ```
 
 This is intentionally opt-in: the marketplace should pin stable releases unless a maintainer explicitly accepts a pre-release.

@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-# Support both `python -m scripts.list_plugins` and `python scripts/list_plugins.py`
+# Support both `python3 -m scripts.list_plugins` and `python3 scripts/list_plugins.py`
 # invocations by ensuring the repo root is on sys.path for the direct case.
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -70,7 +70,7 @@ def _load_cache(cache_path: Path) -> tuple[dict[str, Any] | None, str | None]:
     if not cache_path.exists():
         warning = (
             f"agora:check cache not found at {cache_path} — "
-            "run `python scripts/check.py` to refresh"
+            "run `python3 scripts/check.py` to refresh"
         )
         return None, warning
     try:
@@ -78,14 +78,14 @@ def _load_cache(cache_path: Path) -> tuple[dict[str, Any] | None, str | None]:
     except (json.JSONDecodeError, OSError) as e:
         warning = (
             f"agora:check cache at {cache_path} is malformed ({e}) — "
-            "run `python scripts/check.py` to refresh"
+            "run `python3 scripts/check.py` to refresh"
         )
         return None, warning
     cache_plugins = data.get("plugins")
     if not isinstance(cache_plugins, dict):
         warning = (
             f"agora:check cache at {cache_path} has no 'plugins' map — "
-            "run `python scripts/check.py` to refresh"
+            "run `python3 scripts/check.py` to refresh"
         )
         return None, warning
     return cache_plugins, None

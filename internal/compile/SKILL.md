@@ -14,7 +14,7 @@ Call `compile` after hand-editing `plugins.json` (for example, fixing a typo, tw
 
 1. From the agora repo root, run:
    ```
-   python scripts/compile.py
+   python3 scripts/compile.py
    ```
 2. On success the script prints `Compiled <N> plugins -> .claude-plugin/marketplace.json` and exits 0.
 3. On failure (missing or malformed `plugins.json`, missing required fields) the script writes a single-line error to stderr and exits 1. Fix `plugins.json` and re-run.

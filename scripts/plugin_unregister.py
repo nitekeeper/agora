@@ -13,8 +13,8 @@ import json
 import sys
 from pathlib import Path
 
-# Support both `python -m scripts.plugin_unregister` and
-# `python scripts/plugin_unregister.py` invocations by ensuring the repo
+# Support both `python3 -m scripts.plugin_unregister` and
+# `python3 scripts/plugin_unregister.py` invocations by ensuring the repo
 # root is on sys.path for the direct case.
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))

@@ -29,7 +29,7 @@ You want to browse and install the plugins registered in agora through Claude Co
 2. Bootstrap. This registers the marketplace in `~/.claude/settings.json`, compiles `plugins.json` into `marketplace.json`, validates every entry, and installs the session-start update banner:
 
    ```bash
-   python scripts/setup.py
+   python3 scripts/setup.py
    ```
 
 3. Open Claude Code → `/plugins > Marketplaces > agora` → browse and install.

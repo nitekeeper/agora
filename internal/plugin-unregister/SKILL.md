@@ -18,13 +18,13 @@ Do NOT use this skill to "uninstall" a plugin for an existing consumer — Claud
 
 1. From the agora repo root, run:
    ```
-   python scripts/plugin_unregister.py <name>
+   python3 scripts/plugin_unregister.py <name>
    ```
    The script prints the matching entry and prompts `Remove this entry? [y/N]:`. Answer `y` / `Y` / `yes` to proceed; anything else cancels with no side effects.
 
 2. To skip the prompt (CI, scripted use, agent-driven flows), pass `--yes`:
    ```
-   python scripts/plugin_unregister.py <name> --yes
+   python3 scripts/plugin_unregister.py <name> --yes
    ```
 
 3. On success the script:
@@ -51,4 +51,4 @@ Do NOT use this skill to "uninstall" a plugin for an existing consumer — Claud
 
 - Always run from the agora repo root so `scripts/paths.py` resolves the correct `plugins.json` and `marketplace.json`.
 - The two-file write is atomic — never hand-edit `marketplace.json`; let `registry.save_registry()` regenerate it.
-- After landing the PR, run `python scripts/validate.py` to confirm the registry is still well-formed.
+- After landing the PR, run `python3 scripts/validate.py` to confirm the registry is still well-formed.
