@@ -40,8 +40,8 @@
       "source": {
         "source": "url",
         "url": "https://github.com/nitekeeper/agora.git",
-        "ref": "v0.2.3",
-        "sha": "a629ff4b4f4a1859238ce42517413ea3965eb988"
+        "ref": "v0.2.4",
+        "sha": "39d4d3f241432d8b2316c5e564d9f0cfb22928b0"
       },
       "author": {
         "name": "nitekeeper"
