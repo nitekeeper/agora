@@ -47,6 +47,20 @@
         "name": "nitekeeper"
       },
       "homepage": "https://github.com/nitekeeper/agora"
+    },
+    {
+      "name": "loom-agent-chat",
+      "description": "Claude Code skill for Loom's agent-chat MCP server: per-folder discovery, bare-role-id registration, directed messaging, report-to-file, configurable cap, human-invoked purge.",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/nitekeeper/loom-agent-chat.git",
+        "ref": "v0.1.0",
+        "sha": "c67d7c30d0e6ceacc08cbc8c5ff4ad15bf843cf1"
+      },
+      "author": {
+        "name": "nitekeeper"
+      },
+      "homepage": "https://github.com/nitekeeper/loom-agent-chat"
     }
   ]
 }
