@@ -49,6 +49,20 @@
       "homepage": "https://github.com/nitekeeper/agora",
       "registered_at": "2026-05-15T23:40:58.174074Z",
       "updated_at": "2026-05-16T02:19:28Z"
+    },
+    {
+      "name": "loom-agent-chat",
+      "repository_url": "https://github.com/nitekeeper/loom-agent-chat.git",
+      "current_version": "v0.1.0",
+      "current_sha": "c67d7c30d0e6ceacc08cbc8c5ff4ad15bf843cf1",
+      "description": "Claude Code skill for Loom's agent-chat MCP server: per-folder discovery, bare-role-id registration, directed messaging, report-to-file, configurable cap, human-invoked purge.",
+      "license": "MIT",
+      "author": {
+        "name": "nitekeeper"
+      },
+      "homepage": "https://github.com/nitekeeper/loom-agent-chat",
+      "registered_at": "2026-06-02T06:20:03.491741Z",
+      "updated_at": "2026-06-02T06:20:03.491741Z"
     }
   ]
 }
