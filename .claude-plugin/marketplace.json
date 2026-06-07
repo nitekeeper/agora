@@ -26,8 +26,8 @@
       "source": {
         "source": "url",
         "url": "https://github.com/nitekeeper/memex.git",
-        "ref": "v2.6.2",
-        "sha": "cd6d2d895899da1fd5ba5a33007c6a47164a5234"
+        "ref": "v2.8.0",
+        "sha": "273fc89d1fd09db2c62d10b6adaab0fab688164f"
       },
       "author": {
         "name": "nitekeeper"
