@@ -2,51 +2,23 @@
 
 Deferred work tracked here so it survives session boundaries. Cross out items as they land or get explicitly dropped.
 
-## When this repo goes public
+## When this repo goes public — DONE (flipped public 2026-06-19)
 
-GitHub Pro features (branch protection, auto-merge, CodeQL) become free on public repos. Wire them up the moment the visibility flips:
+GitHub Pro features (branch protection, auto-merge, CodeQL) became free on the public repo; all are wired up:
 
-- [ ] **Enable branch protection on `main`** so the CI gates actually block merges:
-  ```bash
-  gh api -X PUT repos/nitekeeper/agora/branches/main/protection \
-    -F 'required_status_checks[strict]=true' \
-    -F 'required_status_checks[contexts][]=lint' \
-    -F 'required_status_checks[contexts][]=security' \
-    -F 'required_status_checks[contexts][]=tests' \
-    -F enforce_admins=false \
-    -F required_pull_request_reviews= \
-    -F restrictions=
-  ```
-
-- [ ] **Enable `allow_auto_merge` on the repo:**
-  ```bash
-  gh api -X PATCH repos/nitekeeper/agora -F allow_auto_merge=true
-  ```
-
-- [ ] **Teach `plugin-update.yml` to queue PRs for auto-merge.** Once `allow_auto_merge` is on and branch protection is configured, append a step after `gh pr create` that calls:
-  ```bash
-  gh pr merge "$branch" --auto --squash --delete-branch
-  ```
-  With both pieces in place, the auto-update PR self-merges as soon as the CI gates go green. The whole memex-release → agora-PR-merged chain becomes hands-off.
-
-- [ ] **Enable CodeQL.** GitHub-hosted semantic analysis; free for public repos.
-
-- [ ] (Optional) **Connect SonarCloud.** Useful for inline PR comments + dashboards.
+- [x] ~~**Enable branch protection on `main`**~~ — done. The required status checks are the three CI **check-run names** — `Lint & format (Ruff)`, `Security (Bandit + pip-audit)`, `Tests (pytest)` — NOT the job ids `lint`/`security`/`tests`. (An earlier draft of this item used the job ids as contexts; that would have required non-existent checks and blocked every merge.) Configured with `strict=true`, `enforce_admins=false`, no required reviews.
+- [x] ~~**Enable `allow_auto_merge` on the repo**~~ — done.
+- [x] ~~**Teach `plugin-update.yml` to queue PRs for auto-merge**~~ — done (#52). After `gh pr create`, the workflow runs `gh pr merge "$branch" --auto --squash --delete-branch` (made non-fatal so a transient failure can't lose the bump PR). Verified hands-off end to end: bot PRs #55/#56 ran the required CI and auto-merged with no human. This works because **"Allow GitHub Actions to create and approve pull requests"** (`can_approve_pull_request_reviews`) is enabled — bot PRs created before that setting (e.g. #44/#45/#46) parked their checks as `action_required` and had to be merged by hand. Caveat: if a future bot PR ever parks its required checks, `--auto` enables but never completes (silent hang) — the `auto-update-health` scheduled workflow (#58) flags any stale open `auto-update/**` PR via a tracking issue.
+- [x] ~~**Enable CodeQL**~~ — done (#53) via **advanced setup** (committed `.github/workflows/codeql.yml`; languages `python` + `actions`; action SHAs pinned per repo convention). GitHub's default-setup API returned 404 for the `gh` OAuth token, so advanced setup was used instead. To switch to zero-maintenance default setup later: delete `codeql.yml` and toggle Default on under Settings → Code security.
 
 ## Token hygiene
 
-- [x] ~~**Set an expiry on `PLUGIN_REPOS_READ_TOKEN`**~~ — dropped. The plugin repos went public, so `git ls-remote` no longer needs authentication; the read-side PAT was removed from `plugin-update.yml` and its docs. The secret can be deleted from agora's repo settings.
-
-- [ ] **Confirm `AGORA_DISPATCH_TOKEN`'s expiry on each plugin repo** (memex, atelier) — should be 1 year per the setup walkthrough.
+- [x] ~~**Set an expiry on `PLUGIN_REPOS_READ_TOKEN`**~~ — dropped. The plugin repos went public, so `git ls-remote` no longer needs authentication; the read-side PAT was removed from `plugin-update.yml` and its docs, the repo secret was deleted, and the `agora-plugin-read` PAT was revoked.
 
 ## Cleanup
 
-- [ ] **Delete orphan branch `auto-update/memex-20260517-004102`.** Created by a failed `plugin-update.yml` run before the GHA bot was permitted to open PRs; the commit on it was superseded by the PR we eventually opened. Safe to remove:
-  ```bash
-  gh api -X DELETE repos/nitekeeper/agora/git/refs/heads/auto-update/memex-20260517-004102
-  ```
-  Or delete via the GitHub UI's *Branches* page.
+- [x] ~~**Delete orphan branch `auto-update/memex-20260517-004102`**~~ — already gone; no `auto-update/**` branches remain on the remote.
 
 ## Cross-project parity
 
-- [ ] **Atelier symmetry.** Atelier hasn't been wired into the push-loop yet — no CI gatekeepers, no `notify-agora` workflow, no `AGORA_DISPATCH_TOKEN` secret. When it ships its first real release, add the same setup we did for memex.
+- [x] ~~**Atelier symmetry.**~~ — already wired: atelier has `ci.yml` + `release.yml` (whose "Notify agora marketplace" step dispatches `plugin-released` to agora via `AGORA_DISPATCH_TOKEN`) plus the dispatch-token secret. The auto-update chain from atelier is live (e.g. the v1.10.1 bump landed as #55).
