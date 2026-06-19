@@ -28,7 +28,7 @@ When the user expresses one of these intents, read the corresponding internal pr
 - Plugin names in `plugins.json` use the bare lowercase repo name (e.g. `atelier`, not `nitekeeper-atelier`).
 - All Anthropic plugin-name rules apply: kebab-case lowercase, no spaces or special characters.
 - Skills inside plugins follow Anthropic's convention: `description:` only in frontmatter; the slash command is auto-derived from `<plugin-name>:<dir-name>`.
-- Source-of-truth is `plugins.json` at the agora repo root. `.claude-plugin/marketplace.json` is gitignored — it's a generated artifact rebuilt by `compile` (and automatically on every write op + on session-start staleness check).
+- Source-of-truth is `plugins.json` at the agora repo root. `.claude-plugin/marketplace.json` is a compiled artifact rebuilt by `compile` (and automatically on every write op + on session-start staleness check), but it is committed and tracked in the repo — not gitignored.
 - All write ops are atomic via `scripts/atomic.py` — both `plugins.json` and the recompiled `marketplace.json` are committed together or neither.
 - Pre-release tags are skipped by default; pass `--include-prerelease` to opt in (applies to `plugin-register`, `update`, `check`).
 - GitHub is a hard dependency. License detection requires either a LICENSE file in the plugin repo or a non-empty `license.spdx_id` from the GH API.

@@ -9,7 +9,7 @@ Most of the code in this repository is developed and maintained collaboratively 
 ## How it works
 
 - **Plugin repos** — one per plugin. They own their code, their `plugin.json`, and their release tags. Agora never edits them.
-- **Agora repo** — this repo. Holds `plugins.json` (the human-edited registry) and the tooling that compiles it into `.claude-plugin/marketplace.json`.
+- **Agora repo** — this repo. Holds `plugins.json` (the human-edited registry) and the tooling that compiles it into `.claude-plugin/marketplace.json`. The compiled `marketplace.json` is committed and tracked in the repo (not gitignored), so a fresh clone already has it.
 - **Claude Code** — reads the generated `marketplace.json` and handles browse, search, install, enable, and disable through its native `/plugins > Marketplaces` UI.
 
 ## Installation
@@ -34,13 +34,13 @@ You want to browse and install the plugins registered in agora through Claude Co
 
 3. Open Claude Code → `/plugins > Marketplaces > agora` → browse and install.
 
-4. Pull updates:
+4. Pull updates, then ask `agora:run` to apply them:
 
    ```bash
    git pull
-   agora:update --all          # bump every pinned plugin
-   agora:update <name>         # or bump one
    ```
+
+   Then invoke the `agora:run` skill and express your intent in natural language — for example "update all plugins to the latest stable release" (bumps every pinned plugin) or "update atelier" (bumps one). `agora:run` routes the request to the right internal operation.
 
 ### For plugin authors — registering your plugin
 
@@ -49,7 +49,7 @@ You want your plugin to appear in agora so consumers can install it via the `/pl
 **1. Prep the plugin repo**
 
 - **Add a `LICENSE` file** with a recognized SPDX identifier (`MIT`, `Apache-2.0`, `BSD-3-Clause`, etc.). This is required — registration is a hard error if no license can be detected.
-- **Set a GitHub repo description.** Agora uses it as the plugin description. If it's missing, `agora:plugin-register` will prompt you for one.
+- **Set a GitHub repo description.** Agora uses it as the plugin description. If it's missing, the register operation will prompt you for one.
 - **Add GitHub topics** for category and keywords. Optional but recommended; agora maps them against its taxonomy.
 - **Add a `plugin.json`** per Claude Code's plugin schema. Claude Code reads this after install — agora itself never reads it.
 
@@ -66,18 +66,14 @@ Use semver. Pre-release tags (`-rc.1`, `-beta`, `-alpha`) are skipped by default
 
 ```bash
 git clone https://github.com/nitekeeper/agora.git
-cd agora
-
-# From inside your plugin repo (helper reads `git remote get-url origin`):
-cd /path/to/your/plugin
-agora:plugin-register
-
-# Or register a remote plugin without cloning it:
-cd /path/to/agora
-agora:plugin-register --url https://github.com/<owner>/<repo>.git
 ```
 
-`agora:plugin-register` is idempotent: re-running on an existing entry refreshes the version and metadata.
+Then invoke the `agora:run` skill and express your intent — "register a plugin". It routes to the internal `plugin-register` operation, which can either:
+
+- read your plugin from the current directory (it reads `git remote get-url origin`), so run it from inside your plugin repo; or
+- register a remote plugin without cloning it — tell it the repo URL (e.g. "register the plugin at https://github.com/&lt;owner&gt;/&lt;repo&gt;.git").
+
+Registration is idempotent: re-running on an existing entry refreshes the version and metadata.
 
 **4. Submit a PR**
 
@@ -98,7 +94,7 @@ git clone https://github.com/nitekeeper/agora.git
 cd agora
 pip install -r requirements.txt
 pip install pytest ruff bandit pip-audit      # dev tooling
-pytest tests/                                  # ~220 tests
+pytest tests/                                  # ~218 tests
 ruff check . && ruff format --check .          # lint + format
 bandit -c pyproject.toml -r scripts hooks internal   # security
 ```
@@ -111,7 +107,8 @@ Code layout you'll probably touch:
 - `scripts/` — the registry-compilation and plugin-management tooling (`setup.py`, `compile.py`, `update.py`, `plugin_register.py`, `validate.py`, etc.).
 - `tests/` — pytest suite covering the script primitives, schema, and session-start hook.
 - `hooks/session_start.py` — the update-available banner.
-- `skills/agora/SKILL.md` — the user-facing skill that fronts the registry operations.
+- `skills/run/SKILL.md` — the public `agora:run` skill that routes natural-language intents to the internal operations.
+- `internal/` — the 8 operation procedures (`setup`, `compile`, `update`, `check`, `list`, `validate`, `plugin-register`, `plugin-unregister`), each at `internal/<name>/SKILL.md`. Reached only via `agora:run`, never invoked as slash commands.
 - `docs/` — design docs and conventions.
 
 ## Plugin naming
@@ -137,35 +134,39 @@ Agora reads every `plugins.json` field from the git repo and the GitHub API. Aut
 | `category`, `keywords` | GH topics (mapped against the agora taxonomy) |
 | `author`, `homepage` | GH API |
 
-## Skill commands
+Beyond the per-plugin entries above, `plugins.json` also carries a top-level `marketplace` metadata object (`name`, `description`, `owner`). This seeds the corresponding marketplace-level fields in the compiled `marketplace.json`.
 
-| Command | Audience | Purpose |
-|---|---|---|
-| `agora:setup` | Consumer | One-time machine setup |
-| `agora:plugin-register [--url URL]` | Author | Register or refresh a plugin entry |
-| `agora:plugin-unregister <name>` | Author | Remove a plugin entry |
-| `agora:compile` | Maintainer | Re-translate `plugins.json` → `marketplace.json` |
-| `agora:update <name>` / `agora:update --all` | Consumer | Bump pinned versions |
-| `agora:check` | Consumer | Refresh "available versions" cache |
-| `agora:list` | Consumer | Show registered plugins + versions |
-| `agora:validate` | Anyone | Lint `plugins.json` (also runs in CI) |
+## Operations
+
+Agora exposes a **single** Claude Code skill: `agora:run`. There are no `agora:<verb>` slash commands. You invoke `agora:run` and describe what you want in natural language; the skill routes your intent to one of the internal operation procedures below (each lives at `internal/<name>/SKILL.md` and is reached only via `agora:run`, never invoked directly).
+
+| Internal operation | Audience | Example intent for `agora:run` | Purpose |
+|---|---|---|---|
+| `setup` | Consumer | "bootstrap agora on this machine" | One-time machine setup |
+| `plugin-register` | Author | "register a plugin" (optionally with a repo URL) | Register or refresh a plugin entry |
+| `plugin-unregister` | Author | "remove plugin &lt;name&gt;" | Remove a plugin entry |
+| `compile` | Maintainer | "compile the marketplace" | Re-translate `plugins.json` → `marketplace.json` |
+| `update` | Consumer | "update all plugins" / "update &lt;name&gt;" | Bump pinned versions |
+| `check` | Consumer | "check for updates" | Refresh "available versions" cache |
+| `list` | Consumer | "list registered plugins" | Show registered plugins + versions |
+| `validate` | Anyone | "validate plugins.json" | Lint `plugins.json` (also runs in CI) |
 
 Claude Code's native `/plugins` UI handles browse, search, install, and enable/disable — agora does not duplicate those.
 
 ## Pre-release policy
 
-Stable-only by default. Tags with pre-release identifiers (`-rc1`, `-beta.3`, `-alpha`) are ignored by `agora:plugin-register`, `agora:update`, and `agora:check`. Pass `--include-prerelease` to opt in.
+Stable-only by default. Tags with pre-release identifiers (`-rc1`, `-beta.3`, `-alpha`) are ignored by the `plugin-register`, `update`, and `check` operations. Pass `--include-prerelease` to opt in.
 
-A plugin with only pre-release tags fails `agora:plugin-register` with a clear error suggesting either tagging a stable release or passing the flag.
+A plugin with only pre-release tags fails the `plugin-register` operation with a clear error suggesting either tagging a stable release or passing the flag.
 
 This matches the default behavior of npm, cargo, and pip.
 
 ## Updates
 
-- **User-initiated only.** Agora never auto-upgrades — version bumps don't happen mid-session. The session-start banner only *announces* available updates; you decide when to apply them with `agora:update`.
-- **Session-start banner** announces pending updates, read from a local cache populated by `agora:check`. Example: `atelier  v1.2.0 → v1.3.0`. The banner is quiet and dismissible.
-- **Opportunistic cache refresh.** The session-start hook keeps the cache fresh in the background: if the cache is missing or older than 1 hour, it spawns a detached `agora:check` subprocess. The subprocess runs fully backgrounded — no console window, no blocking session start. The banner reflects the latest data on your next session.
-- **Cache TTL ~24h** at the `agora:check` layer. Offline runs fall back to the last known cache silently.
+- **User-initiated only.** Agora never auto-upgrades — version bumps don't happen mid-session. The session-start banner only *announces* available updates; you decide when to apply them by asking `agora:run` to update.
+- **Session-start banner** announces pending updates, read from a local cache populated by the `check` operation. Example: `atelier  v1.2.0 → v1.3.0`. The banner is quiet and dismissible.
+- **Opportunistic cache refresh.** The session-start hook keeps the cache fresh in the background: if the cache is missing or older than 1 hour, it spawns a detached check subprocess (`scripts/check.py`). The subprocess runs fully backgrounded — no console window, no blocking session start. The banner reflects the latest data on your next session.
+- **Cache TTL ~24h** at the check layer. Offline runs fall back to the last known cache silently.
 - **Optional push-based bumps.** Plugin authors can wire their release workflow to fire a `repository_dispatch` event at agora; agora then opens a PR with the bump within seconds. Setup walkthrough at [docs/automation.md](docs/automation.md).
 
 ## Repository layout
@@ -173,7 +174,7 @@ This matches the default behavior of npm, cargo, and pip.
 ```
 agora/
   .claude-plugin/
-    marketplace.json       # generated from plugins.json
+    marketplace.json       # compiled from plugins.json; committed/tracked (not gitignored)
   plugins.json             # human-edited registry, source of truth
   scripts/
     setup.py
@@ -185,8 +186,17 @@ agora/
   hooks/
     session_start.py       # update-available banner
   skills/
-    agora/
-      SKILL.md
+    run/
+      SKILL.md             # public agora:run skill — routes intents to internal ops
+  internal/                # operation procedures, reached only via agora:run (not slash commands)
+    setup/SKILL.md
+    compile/SKILL.md
+    update/SKILL.md
+    check/SKILL.md
+    list/SKILL.md
+    validate/SKILL.md
+    plugin-register/SKILL.md
+    plugin-unregister/SKILL.md
   docs/
     automation.md          # plugin-author guide: push-based version bumps
   .github/
