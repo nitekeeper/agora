@@ -120,3 +120,12 @@ jobs:
             --head "$branch" \
             --title "$title" \
             --body "Automated bump triggered by ${PLUGIN}'s release workflow via repository_dispatch (plugin-released event). See .github/workflows/plugin-update.yml."
+          # Queue the PR for auto-merge so it self-merges once the required CI
+          # checks pass — no human in the loop for routine version bumps. This
+          # requires repo `allow_auto_merge` + branch protection on main (both
+          # configured at the repo level, not here). Made non-fatal: the PR is
+          # already created above, so a transient failure to enable auto-merge
+          # must not fail the job and lose the bump — it just falls back to
+          # manual merge.
+          gh pr merge "$branch" --auto --squash --delete-branch \
+            || echo "::warning::could not enable auto-merge; PR is open for manual merge"
