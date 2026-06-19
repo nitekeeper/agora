@@ -1,7 +1,8 @@
 name: Plugin update (push-triggered)
 
 # Dispatched by individual plugin repos when they publish a new release.
-# See docs/automation.md for the plugin-side workflow template + PAT setup.
+# See docs/automation.md for the plugin-side workflow template + dispatch
+# token setup.
 #
 # Payload:
 #   client_payload.plugin     — plugin name (e.g. "memex") -- REQUIRED
@@ -48,9 +49,10 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
         with:
           fetch-depth: 0
-          # We manage git auth ourselves below so the PAT-based auth doesn't
-          # collide with the credential checkout would otherwise persist.
-          persist-credentials: false
+          # Default persist-credentials: true keeps checkout's GITHUB_TOKEN
+          # credential in .git/config so the final `git push` to agora
+          # authenticates natively. Plugin repos are public, so the
+          # `git ls-remote` reads in scripts/update.py need no auth.
 
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
         with:
@@ -62,32 +64,13 @@ jobs:
           python3 -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Configure git auth for private plugin repo reads
-        # With persist-credentials: false on the checkout step, .git/config
-        # has no credential entry. We install our own extraheader using
-        # PLUGIN_REPOS_READ_TOKEN — a fine-grained PAT covering the private
-        # plugin repos. scripts/update.py then `git ls-remote`s against
-        # plugin URLs with the right authentication, no auth-precedence
-        # battle vs anything actions/checkout left behind.
-        env:
-          PLUGIN_TOKEN: ${{ secrets.PLUGIN_REPOS_READ_TOKEN }}
-        run: |
-          if [ -z "$PLUGIN_TOKEN" ]; then
-            echo "::warning::PLUGIN_REPOS_READ_TOKEN secret not set — ls-remote will use anonymous access. Private plugin repos will fail."
-          else
-            auth=$(printf 'x-access-token:%s' "$PLUGIN_TOKEN" | base64 -w0)
-            git config --local http.https://github.com/.extraheader "AUTHORIZATION: basic $auth"
-            echo "Configured PAT-based extraheader for github.com."
-          fi
-
       - name: Run scripts/update.py
         id: update
         env:
-          # update.py also talks to the GitHub REST API (description fetch, tag
-          # SHA resolution). Same PAT — it carries Contents+Metadata read on the
-          # plugin repos. Falls back to default GITHUB_TOKEN if the PAT isn't
-          # configured yet (public-only plugin set, or pre-Option-B setup).
-          GITHUB_TOKEN: ${{ secrets.PLUGIN_REPOS_READ_TOKEN || secrets.GITHUB_TOKEN }}
+          # update.py resolves the latest tag and its SHA entirely via
+          # `git ls-remote` (git_helpers.ls_remote_tags) — no GitHub REST
+          # calls, no token needed. The now-public plugin repos read
+          # anonymously.
           # client_payload.plugin via env — see "Validate payload" step for
           # the no-inline-interpolation rationale.
           PLUGIN: ${{ github.event.client_payload.plugin }}
@@ -99,18 +82,6 @@ jobs:
             echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "No version change for $PLUGIN; nothing to PR."
           fi
-
-      - name: Swap extraheader to GITHUB_TOKEN for the push
-        # After the read phase we no longer need PAT auth — we need write
-        # access to agora itself so `git push` can land the branch. The
-        # default GITHUB_TOKEN has that. Replace the PAT extraheader with
-        # one that uses GITHUB_TOKEN; the rest of the job pushes as usual.
-        if: steps.update.outputs.changed == 'true'
-        env:
-          AGORA_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          auth=$(printf 'x-access-token:%s' "$AGORA_TOKEN" | base64 -w0)
-          git config --local --replace-all http.https://github.com/.extraheader "AUTHORIZATION: basic $auth"
 
       - name: Open PR with the bump
         if: steps.update.outputs.changed == 'true'

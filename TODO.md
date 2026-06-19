@@ -35,7 +35,7 @@ GitHub Pro features (branch protection, auto-merge, CodeQL) become free on publi
 
 ## Token hygiene
 
-- [ ] **Set an expiry on `PLUGIN_REPOS_READ_TOKEN`** — currently no-expiration. Industry standard is 1 year max for personal automation tokens. Regenerate via *Settings → Developer settings → Fine-grained tokens*, edit expiry to 365 days, re-paste as the same secret name in agora.
+- [x] ~~**Set an expiry on `PLUGIN_REPOS_READ_TOKEN`**~~ — dropped. The plugin repos went public, so `git ls-remote` no longer needs authentication; the read-side PAT was removed from `plugin-update.yml` and its docs. The secret can be deleted from agora's repo settings.
 
 - [ ] **Confirm `AGORA_DISPATCH_TOKEN`'s expiry on each plugin repo** (memex, atelier) — should be 1 year per the setup walkthrough.
 
