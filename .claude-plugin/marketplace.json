@@ -61,6 +61,39 @@
         "name": "nitekeeper"
       },
       "homepage": "https://github.com/nitekeeper/loom-agent-chat"
+    },
+    {
+      "name": "x-twitter-scraper",
+      "description": "Xquik plugin for X/Twitter data workflows with REST API, webhooks, MCP, monitoring, media, and extraction tools.",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/Xquik-dev/x-twitter-scraper.git",
+        "ref": "v2.4.16",
+        "sha": "7ceb43b93b076328146d941fb70268e588da6e4a"
+      },
+      "category": "data",
+      "keywords": [
+        "advanced-search",
+        "agent-skill",
+        "ai-agent",
+        "data-extraction",
+        "follower-export",
+        "mcp",
+        "mcp-server",
+        "profile-tweets",
+        "sdk",
+        "send-tweets",
+        "social-media-api",
+        "social-media-automation",
+        "tweet-search",
+        "twitter",
+        "twitter-api",
+        "twitter-api-alternative"
+      ],
+      "author": {
+        "name": "Xquik-dev"
+      },
+      "homepage": "https://xquik.com"
     }
   ]
 }
