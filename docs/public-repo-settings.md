@@ -24,7 +24,8 @@ For repos we author and release.
 | `enforce_admins` | **false** | lets the maintainer `--admin`-merge when CI is green but no second reviewer exists |
 | `delete_branch_on_merge` | **true** | merged branches auto-clean |
 | `allow_auto_merge` | **false** | bump/release PRs are merged on manual review, not auto |
-| CodeQL | **recommended** for code-bearing repos (advanced setup: committed `codeql.yml`, pinned SHAs) | extra static analysis beyond Ruff/Bandit; optional, not a hard gate |
+| CodeQL | **recommended** for code-bearing repos (advanced setup: committed `codeql.yml`, pinned SHAs) | extra static analysis beyond Ruff/Bandit. Runs for security alerts; **NOT** added to required status checks (advisory, never a merge gate) — matches agora's posture |
+| Slow integration/e2e suites | **not** a required check | gating merges on a multi-minute e2e stalls the queue; run it on push/nightly or locally, keep the required gate fast (lint/type-check/unit) |
 
 **Apply (own repo `R`, default branch `B`, with its real check-run names):**
 ```bash
@@ -70,7 +71,7 @@ protection calls.
 | laravel-settler-lite | main | 1 (ShellCheck) | ✅ (only PR check) |
 | sail-new | main | 1 (ShellCheck) | ✅ (only PR check) |
 | second-brain-blueprint | master | 1 (Markdown lint) | ✅ (only PR check) |
-| **loom** | main | **0** | ❌ has `Playwright Electron e2e` PR check, requires none |
+| loom | main | 1 (Type-check) | ✅ **reconciled 2026-06-20** — slow e2e dropped from CI, fast `Type-check` gate added + required, CodeQL added (advisory) |
 | **loom-agent-chat** | master | **0** | ❌ anomalous: protected, 0 checks, 0 reviews, `enforce_admins=true`, `dbm=false`, no CI |
 
 ### Forks — all compliant with Template B (no protection, no imposed wiring)
@@ -80,18 +81,25 @@ Understand-Anything · andrej-karpathy-skills · ladybug · skills
 
 ## Reconciliation plan
 
-### 1. loom — require its PR check (the one real gap)
-`e2e.yml` is the only `pull_request`-triggered workflow; its check-run is
-`Playwright Electron e2e`. The 3 installer workflows are `push`-only release
-builds and must NOT be required.
-```bash
-gh api -X PUT repos/nitekeeper/loom/branches/main/protection \
-  -F 'required_status_checks[strict]=false' \
-  -F 'required_status_checks[contexts][]=Playwright Electron e2e' \
-  -F enforce_admins=false \
-  -F 'required_pull_request_reviews[required_approving_review_count]=1' \
-  -F restrictions=
-```
+### 1. loom — DONE (2026-06-20, PR #5)
+The only `pull_request`-triggered workflow was the **slow** `Playwright Electron
+e2e` (~minutes). Per the "slow suites aren't required" rule, it was **deleted
+from CI** (run locally; the 3 installer workflows are push-only and stay), and
+replaced with a fast `Type-check` gate + CodeQL:
+- deleted `.github/workflows/e2e.yml`
+- added `ci.yml` → check-run **`Type-check`** (`npm ci` + `tsc --noEmit` ×2; ~40s)
+- added `codeql.yml` (advanced setup; `actions` + `javascript-typescript`)
+- branch protection now requires `Type-check` (strict=false, 1 review,
+  enforce_admins=false); CodeQL runs advisory.
+
+**Lint deferred:** a trial eslint flat config flagged **17,344** problems on the
+existing code — a required lint gate would be perma-red. Lint needs a separate
+baseline-cleanup pass before it can join the gate.
+
+> ⚠️ `gh api -F 'required_status_checks[...]'` nested-field form silently drops
+> `required_status_checks` (leaves it null). Send a JSON body via
+> `gh api -X PUT ... --input <file>` instead:
+> `{"required_status_checks":{"strict":false,"contexts":["Type-check"]},"enforce_admins":false,"required_pull_request_reviews":{"required_approving_review_count":1},"restrictions":null}`
 
 ### 2. loom-agent-chat — normalize (decision needed)
 No CI workflows exist, so check-based protection isn't possible yet. Two paths:
