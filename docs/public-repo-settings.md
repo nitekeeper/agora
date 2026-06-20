@@ -71,8 +71,15 @@ protection calls.
 | laravel-settler-lite | main | 1 (ShellCheck) | ✅ (only PR check) |
 | sail-new | main | 1 (ShellCheck) | ✅ (only PR check) |
 | second-brain-blueprint | master | 1 (Markdown lint) | ✅ (only PR check) |
-| loom | main | 1 (Type-check) | ✅ **reconciled 2026-06-20** — slow e2e dropped from CI, fast `Type-check` gate added + required, CodeQL added (advisory) |
-| **loom-agent-chat** | master | **0** | ❌ anomalous: protected, 0 checks, 0 reviews, `enforce_admins=true`, `dbm=false`, no CI |
+| loom | main | 1 (Lint & type-check) | ✅ **reconciled 2026-06-20** — slow e2e dropped from CI; fast `Lint & type-check` gate (eslint baseline: 17,344→0 errors, 99.86% config artifact) + required; CodeQL added (advisory) |
+| loom-agent-chat | master | 1 (Lint & format (Ruff)) | ✅ **reconciled 2026-06-20** — added Ruff CI gate + `pyproject.toml`, CodeQL (advisory), branch protection (1 review, strict=false), and fixed `dbm`→true |
+
+**CodeQL backfill (advisory, 2026-06-20):** added to every code-bearing own repo
+that lacked it — atelier, kaizen, memex (python), web-harvester (js/ts),
+second-brain-blueprint (python), loom (js/ts), loom-agent-chat (python). agora
+already had it. The two bash repos (laravel-settler-lite, sail-new) are exempt —
+CodeQL does not support shell/HCL/PowerShell. CodeQL is **never** a required
+status check (advisory only).
 
 ### Forks — all compliant with Template B (no protection, no imposed wiring)
 Understand-Anything · andrej-karpathy-skills · ladybug · skills
@@ -92,41 +99,44 @@ replaced with a fast `Type-check` gate + CodeQL:
 - branch protection now requires `Type-check` (strict=false, 1 review,
   enforce_admins=false); CodeQL runs advisory.
 
-**Lint deferred:** a trial eslint flat config flagged **17,344** problems on the
-existing code — a required lint gate would be perma-red. Lint needs a separate
-baseline-cleanup pass before it can join the gate.
+**Lint — DONE (2026-06-20, PR #9).** The "17,344 problems" was **99.86% config
+artifact** (core `no-undef` on TS + linting `dist/`/design-mockups/sample
+fixtures). A correct typescript-eslint flat config (TS parser, area-scoped
+browser/node/electron globals, proper `ignores`) yielded **24 real → 0 errors /
+43 advisory warnings**. Fixed 3 genuine issues (incl. a rules-of-hooks bug in
+`ReceiptStrip`); tuned noisy rules with inline justifications; a11y left advisory.
+The gate check-run was renamed **`Type-check` → `Lint & type-check`** and branch
+protection updated to require the new name. *(Lesson: a giant lint count on a
+clean-typechecking codebase is almost always a config artifact — fix the config
+before touching code.)*
 
 > ⚠️ `gh api -F 'required_status_checks[...]'` nested-field form silently drops
 > `required_status_checks` (leaves it null). Send a JSON body via
 > `gh api -X PUT ... --input <file>` instead:
 > `{"required_status_checks":{"strict":false,"contexts":["Type-check"]},"enforce_admins":false,"required_pull_request_reviews":{"required_approving_review_count":1},"restrictions":null}`
 
-### 2. loom-agent-chat — normalize (decision needed)
-No CI workflows exist, so check-based protection isn't possible yet. Two paths:
-- **(a) Lightweight now:** drop the anomalous state — `enforce_admins=false`,
-  `delete_branch_on_merge=true`, keep 1 review (or 0). Add CI later.
-  ```bash
-  gh api -X PUT repos/nitekeeper/loom-agent-chat/branches/master/protection \
-    -F enforce_admins=false \
-    -F 'required_pull_request_reviews[required_approving_review_count]=1' \
-    -F 'required_status_checks[strict]=false' -F restrictions=
-  gh api -X PATCH repos/nitekeeper/loom-agent-chat -F delete_branch_on_merge=true
-  ```
-- **(b) Full:** add a minimal CI workflow (lint/test for the stdlib client), then
-  apply Template A requiring its check-run name. Preferred long-term.
+### 2. loom-agent-chat — DONE (2026-06-20, PR #3) — chose path (b)
+It had no CI and an anomalous protected-but-empty state. Applied the full
+treatment: created `pyproject.toml` (was absent) + a Ruff CI gate (check-run
+**`Lint & format (Ruff)`**, lint-only — no tests exist in the stdlib client),
+added CodeQL (python+actions, advisory), set branch protection to require the
+Ruff check (1 review, strict=false, enforce_admins=false), and fixed
+`delete_branch_on_merge` false→true. Safe source fixes only (UP041 socket
+timeout, 2× B904); UP031 %-format excluded with rationale.
 
-### 3. Everything else — no action
-The 8 compliant own repos and all 4 forks already match their template.
+### 3. CodeQL backfill — DONE (2026-06-20)
+Added advisory CodeQL to every code-bearing own repo lacking it (atelier, kaizen,
+memex, web-harvester, second-brain-blueprint, loom, loom-agent-chat). Bash repos
+(laravel-settler-lite, sail-new) exempt — CodeQL has no shell support.
 
-### Optional — CodeQL backfill
-Only agora (own) has `codeql.yml`. Adding it to the other code-bearing own repos
-(kaizen/atelier/memex already track this in their TODOs) is recommended but not a
-hard gate.
+### 4. Everything else — no action
+The remaining own repos and all 4 forks already match their template.
 
 ---
 
-## Open decisions (carry into application)
-1. **loom-agent-chat:** path (a) lightweight or (b) add CI? (default: (a) now, (b) later)
-2. **CodeQL backfill** across own code repos — do it now or leave to each repo's TODO?
-3. **Required reviews = 1** is the current uniform posture; revisit to 0 if the
-   solo-maintainer `--admin` friction isn't worth it.
+## Open decisions (resolved 2026-06-20)
+1. ~~loom-agent-chat path~~ → **(b)** full CI + protection. Done.
+2. ~~CodeQL backfill~~ → **done** across all code-bearing own repos.
+3. **Required reviews = 1** kept as the uniform posture (solo-maintainer merges via
+   the owner/admin path; `enforce_admins=false` enables it). Revisit to 0 only if
+   that friction outweighs the gate's value.
