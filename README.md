@@ -94,12 +94,12 @@ git clone https://github.com/nitekeeper/agora.git
 cd agora
 pip install -r requirements.txt
 pip install pytest ruff bandit pip-audit      # dev tooling
-pytest tests/                                  # ~218 tests
+pytest tests/                                  # the full test suite
 ruff check . && ruff format --check .          # lint + format
 bandit -c pyproject.toml -r scripts hooks internal   # security
 ```
 
-PRs run a CI gate (lint, security, tests) — see `.github/workflows/ci.yml`. Once the repo is configured with branch protection on `main`, merges require all three checks green.
+PRs run a CI gate (lint, security, tests) — see `.github/workflows/ci.yml`. CodeQL static analysis (`.github/workflows/codeql.yml`) also runs on every PR (plus a weekly schedule), scanning the `python` and GitHub `actions` code. Once the repo is configured with branch protection on `main`, merges require all three checks green.
 
 Code layout you'll probably touch:
 
@@ -202,6 +202,7 @@ agora/
   .github/
     workflows/
       ci.yml               # lint + security + tests, runs on every PR
+      codeql.yml           # CodeQL static analysis (python + actions), PR + weekly
       plugin-update.yml    # receives repository_dispatch from plugin repos
     dependabot.yml         # weekly pip + github-actions updates
   README.md
