@@ -9,4 +9,4 @@ jsonschema>=4.26.0
 # Python's bundled OpenSSL can't always validate GitHub's chain).
 # certifi is the fallback CA bundle.
 truststore>=0.10.4
-certifi>=2026.5.20
+certifi>=2026.6.17
