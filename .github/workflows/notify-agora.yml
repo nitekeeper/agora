@@ -1,0 +1,48 @@
+name: Notify agora of release (self-dispatch)
+
+# Agora indexes itself in its own marketplace (the `agora` plugin), so it
+# dogfoods the same push-based auto-bump that plugin authors wire up — see
+# docs/automation.md. On each published release, fire a repository_dispatch
+# at THIS repo so .github/workflows/plugin-update.yml opens a PR that bumps
+# agora's own self-pin to the just-released tag.
+#
+# Requires the AGORA_DISPATCH_TOKEN secret (a fine-grained PAT for this repo,
+# per docs/automation.md). The built-in GITHUB_TOKEN will NOT work here:
+# events triggered by GITHUB_TOKEN do not start further workflow runs, so
+# plugin-update.yml would never fire. Fork-portable: it dispatches at
+# github.repository and no-ops cleanly when the secret is absent.
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  self-dispatch:
+    name: Fire self-dispatch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fire repository_dispatch at this repo
+        env:
+          # A PAT, not GITHUB_TOKEN (see header). Absent on forks that have
+          # not set it up -> the step no-ops below instead of failing.
+          GH_TOKEN: ${{ secrets.AGORA_DISPATCH_TOKEN }}
+          # Pass GitHub-context + event values via env, never inline-
+          # interpolate into the run: script (mirrors the no-inline rule in
+          # plugin-update.yml; a tag name is event-controlled data).
+          TARGET: ${{ github.repository }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "AGORA_DISPATCH_TOKEN not set — skipping self-dispatch (see docs/automation.md)."
+            exit 0
+          fi
+          plugin=$(echo "$REPO_NAME" | tr 'A-Z' 'a-z')
+          gh api "repos/$TARGET/dispatches" \
+            -f event_type=plugin-released \
+            -f client_payload[plugin]="$plugin" \
+            -f client_payload[tag]="$TAG"
+          echo "Dispatched plugin-released for $plugin ($TAG) at $TARGET."

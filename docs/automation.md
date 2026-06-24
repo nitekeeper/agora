@@ -83,6 +83,12 @@ If the plugin's version was already pinned to the new tag (e.g., you re-fired th
 
 The only credential involved is the per-plugin `AGORA_DISPATCH_TOKEN`: it lives in each plugin repo, has access to agora, and exists solely to fire the plugin → agora notification. The agora side needs no token to read plugin tags — the plugin repos are public, so `scripts/update.py` reaches them with anonymous `git ls-remote` and makes no GitHub REST calls. Agora's final `git push` + `gh pr create` authenticate via checkout's persisted built-in `GITHUB_TOKEN`.
 
+## Agora dogfoods this (self-pin auto-bump)
+
+Agora is itself indexed in its own marketplace (the `agora` plugin), so its self-pin needs bumping on every agora release just like any other plugin. Agora therefore ships its **own** copy of the producer workflow at `.github/workflows/notify-agora.yml` — the same template as above, but pointed at itself (`github.repository`). Each published agora release fires the `plugin-released` event, and `plugin-update.yml` opens the self-pin bump PR automatically.
+
+This requires the `AGORA_DISPATCH_TOKEN` secret **on the agora repo itself** — the same kind of fine-grained PAT described in [Prerequisite](#prerequisite-fine-grained-pat) (it already grants access to `nitekeeper/agora`; just add the value as a secret under *agora → Settings → Secrets and variables → Actions*). The built-in `GITHUB_TOKEN` cannot be used here: events it triggers do not start further workflow runs, so `plugin-update.yml` would never fire. If the secret is absent (for example on a fresh fork), the workflow no-ops cleanly instead of failing — a fork that wants the same behavior just adds its own `AGORA_DISPATCH_TOKEN`.
+
 ## Limitations
 
 - **Pre-release tags are skipped** by `agora:update` per agora's default policy. Firing a dispatch for a `v1.0.0-rc.1` tag still triggers the workflow, but the script logs "no version change" and no PR is opened. Pass `--include-prerelease` in the workflow if you want them.
