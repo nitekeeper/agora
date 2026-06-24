@@ -1,6 +1,9 @@
 # Agora — Custom Plugin Marketplace
 
-Agora is a self-hosted Claude Code plugin marketplace. It's a curated registry over Claude Code's native marketplace mechanism: each plugin lives in its own GitHub repository with semver release tags; agora holds a single source-of-truth index (`plugins.json`) at the repo root and compiles it into the `marketplace.json` shape Claude Code expects. Authors register their plugins via PRs; consumers clone agora, bootstrap it once, and use Claude Code's built-in `/plugins` UI to browse and install.
+Agora is a self-hosted Claude Code plugin marketplace. It's a curated registry over Claude Code's native marketplace mechanism: each plugin lives in its own GitHub repository with semver release tags; agora holds a single source-of-truth index (`plugins.json`) at the repo root and compiles it into the `marketplace.json` shape Claude Code expects. The maintainer curates the canonical index; anyone who wants to index their own plugins runs their own instance. Consumers add the marketplace once, then use Claude Code's built-in `/plugin` UI to browse and install.
+
+> **Heads up — canonical agora isn't accepting third-party plugin submissions right now.**
+> The canonical `nitekeeper/agora` index is a small, maintainer-curated set of plugins, and there isn't review bandwidth to vet outside submissions at the moment. **Please don't open plugin-registration PRs against `nitekeeper/agora`.** If you want your own plugins indexed, the design supports exactly that: **[run your own agora instance](#for-plugin-authors--index-your-plugins-in-your-own-instance)** — fork or clone this repo and register into it. Consumers are unaffected: you can still add the canonical marketplace and install the maintainer-curated plugins (see [For consumers](#for-consumers--using-plugins-from-agora)).
 
 ## A note on origins
 
@@ -10,7 +13,7 @@ Most of the code in this repository is developed and maintained collaboratively 
 
 - **Plugin repos** — one per plugin. They own their code, their `plugin.json`, and their release tags. Agora never edits them.
 - **Agora repo** — this repo. Holds `plugins.json` (the human-edited registry) and the tooling that compiles it into `.claude-plugin/marketplace.json`. The compiled `marketplace.json` is committed and tracked in the repo (not gitignored), so a fresh clone already has it.
-- **Claude Code** — reads the generated `marketplace.json` and handles browse, search, install, enable, and disable through its native `/plugins > Marketplaces` UI.
+- **Claude Code** — reads the generated `marketplace.json` and handles browse, search, install, enable, and disable through its native `/plugin` UI.
 
 ## Installation
 
@@ -18,7 +21,7 @@ Agora has three audiences with different install paths.
 
 ### For consumers — using plugins from agora
 
-You want to browse and install the plugins registered in agora through Claude Code's normal `/plugins` UI.
+You want to browse and install the maintainer-curated plugins registered in the canonical agora through Claude Code's normal `/plugin` UI. This path is unchanged.
 
 1. Clone the agora repo:
 
@@ -26,13 +29,13 @@ You want to browse and install the plugins registered in agora through Claude Co
    git clone https://github.com/nitekeeper/agora.git
    ```
 
-2. Bootstrap. This registers the marketplace in `~/.claude/settings.json`, compiles `plugins.json` into `marketplace.json`, validates every entry, and installs the session-start update banner:
+2. Bootstrap. This registers the marketplace in `~/.claude/settings.json` (`extraKnownMarketplaces.agora`, pointing at your local checkout) and compiles `plugins.json` into `marketplace.json`:
 
    ```bash
    python3 scripts/setup.py
    ```
 
-3. Open Claude Code → `/plugins > Marketplaces > agora` → browse and install.
+3. Open Claude Code → `/plugin` → Marketplaces → agora → browse and install. (The setup script's own output refers to this as `/plugins`; the current Claude Code command is `/plugin`.)
 
 4. Pull updates, then ask `agora:run` to apply them:
 
@@ -42,18 +45,33 @@ You want to browse and install the plugins registered in agora through Claude Co
 
    Then invoke the `agora:run` skill and express your intent in natural language — for example "update all plugins to the latest stable release" (bumps every pinned plugin) or "update atelier" (bumps one). `agora:run` routes the request to the right internal operation.
 
-### For plugin authors — registering your plugin
+### For plugin authors — index your plugins in your own instance
 
-You want your plugin to appear in agora so consumers can install it via the `/plugins` UI.
+You want your plugin to appear in an agora marketplace so consumers can install it via the `/plugin` UI.
 
-**1. Prep the plugin repo**
+> **Canonical `nitekeeper/agora` is not accepting third-party plugin submissions at this time.** Don't open a plugin-registration PR against `nitekeeper/agora` — it won't be merged. Instead, **run your own agora instance** and register your plugins into it. This is a first-class, intended path: agora is built to be forked (see [Distribution](#distribution)), and the registration tooling works identically in your fork. The wiki has a step-by-step **Run Your Own Agora** guide; this section stands on its own.
+
+**1. Stand up your own instance**
+
+Fork or clone agora, then bootstrap it on your machine:
+
+```bash
+git clone https://github.com/<you>/agora.git
+cd agora
+pip install -r requirements.txt
+python3 scripts/setup.py
+```
+
+`setup.py` registers *your* checkout as a known marketplace in `~/.claude/settings.json` and compiles its `marketplace.json`. From here on, "agora" means your instance.
+
+**2. Prep the plugin repo**
 
 - **Add a `LICENSE` file** with a recognized SPDX identifier (`MIT`, `Apache-2.0`, `BSD-3-Clause`, etc.). This is required — registration is a hard error if no license can be detected.
-- **Set a GitHub repo description.** Agora uses it as the plugin description. If it's missing, the register operation will prompt you for one.
+- **Set a GitHub repo description.** Agora uses it as the plugin description. It is required: registration is a **hard error if the repo description is empty** — set it on GitHub (`https://github.com/<owner>/<repo>/edit`) or pass `--description '...'`.
 - **Add GitHub topics** for category and keywords. Optional but recommended; agora maps them against its taxonomy.
 - **Add a `plugin.json`** per Claude Code's plugin schema. Claude Code reads this after install — agora itself never reads it.
 
-**2. Tag a release**
+**3. Tag a release**
 
 ```bash
 git tag vX.Y.Z
@@ -62,26 +80,18 @@ git push --tags
 
 Use semver. Pre-release tags (`-rc.1`, `-beta`, `-alpha`) are skipped by default — see [Pre-release policy](#pre-release-policy).
 
-**3. Register with agora**
+**4. Register with your instance**
 
-```bash
-git clone https://github.com/nitekeeper/agora.git
-```
-
-Then invoke the `agora:run` skill and express your intent — "register a plugin". It routes to the internal `plugin-register` operation, which can either:
+From your agora checkout, invoke the `agora:run` skill and express your intent — "register a plugin". It routes to the internal `plugin-register` operation, which can either:
 
 - read your plugin from the current directory (it reads `git remote get-url origin`), so run it from inside your plugin repo; or
 - register a remote plugin without cloning it — tell it the repo URL (e.g. "register the plugin at https://github.com/&lt;owner&gt;/&lt;repo&gt;.git").
 
-Registration is idempotent: re-running on an existing entry refreshes the version and metadata.
-
-**4. Submit a PR**
-
-Open a pull request against `nitekeeper/agora` with the updated `plugins.json`. Direct pushes to `main` are blocked.
+Registration is idempotent: re-running on an existing entry refreshes the version and metadata. Commit the updated `plugins.json` to *your* fork (direct pushes to `main` are blocked there too if you keep agora's branch protection).
 
 **(Optional) Wire up automatic bumps on future releases**
 
-After your plugin is registered, you can set up a one-time hook so future releases auto-bump the pin in agora. Each new release in your plugin repo fires a GitHub `repository_dispatch` event at agora; agora's `plugin-update.yml` workflow receives it, runs `scripts/update.py <your-plugin>`, and opens a PR with the new pin. The PR goes through agora's CI gates before merging.
+After your plugin is registered in your instance, you can set up a one-time hook so future releases auto-bump the pin. Each new release in your plugin repo fires a GitHub `repository_dispatch` event at your agora instance; agora's `plugin-update.yml` workflow receives it, runs `scripts/update.py <your-plugin>`, and opens a PR with the new pin. The PR goes through your CI gates before merging.
 
 Setup is ~5 minutes per plugin (a fine-grained PAT + a 20-line workflow file). See [docs/automation.md](docs/automation.md) for the full walkthrough.
 
@@ -129,10 +139,11 @@ Agora reads every `plugins.json` field from the git repo and the GitHub API. Aut
 | `repository_url` | The URL |
 | `current_version` | Latest stable git tag |
 | `current_sha` | Tag → commit resolution |
-| `description` | GitHub repo description (prompts if missing) |
+| `description` | GitHub repo description. **Hard error if empty** — set it on GitHub or pass `--description`. |
 | `license` | LICENSE file (SPDX-parsed); GH API fallback. **Hard error if not detected.** |
 | `category`, `keywords` | GH topics (mapped against the agora taxonomy) |
-| `author`, `homepage` | GH API |
+| `author` | Repo owner parsed from the URL path, stored as `{"name": <owner>}` |
+| `homepage` | GH API (fallback `https://github.com/<owner>/<repo>`) |
 
 Beyond the per-plugin entries above, `plugins.json` also carries a top-level `marketplace` metadata object (`name`, `description`, `owner`). This seeds the corresponding marketplace-level fields in the compiled `marketplace.json`.
 
@@ -143,15 +154,15 @@ Agora exposes a **single** Claude Code skill: `agora:run`. There are no `agora:<
 | Internal operation | Audience | Example intent for `agora:run` | Purpose |
 |---|---|---|---|
 | `setup` | Consumer | "bootstrap agora on this machine" | One-time machine setup |
-| `plugin-register` | Author | "register a plugin" (optionally with a repo URL) | Register or refresh a plugin entry |
-| `plugin-unregister` | Author | "remove plugin &lt;name&gt;" | Remove a plugin entry |
+| `plugin-register` | Self-hoster | "register a plugin" (optionally with a repo URL) | Register or refresh a plugin entry |
+| `plugin-unregister` | Self-hoster | "remove plugin &lt;name&gt;" | Remove a plugin entry |
 | `compile` | Maintainer | "compile the marketplace" | Re-translate `plugins.json` → `marketplace.json` |
 | `update` | Consumer | "update all plugins" / "update &lt;name&gt;" | Bump pinned versions |
 | `check` | Consumer | "check for updates" | Refresh "available versions" cache |
 | `list` | Consumer | "list registered plugins" | Show registered plugins + versions |
 | `validate` | Anyone | "validate plugins.json" | Lint `plugins.json` (also runs in CI) |
 
-Claude Code's native `/plugins` UI handles browse, search, install, and enable/disable — agora does not duplicate those.
+Claude Code's native `/plugin` UI handles browse, search, install, and enable/disable — agora does not duplicate those.
 
 ## Pre-release policy
 
@@ -164,10 +175,10 @@ This matches the default behavior of npm, cargo, and pip.
 ## Updates
 
 - **User-initiated only.** Agora never auto-upgrades — version bumps don't happen mid-session. The session-start banner only *announces* available updates; you decide when to apply them by asking `agora:run` to update.
-- **Session-start banner** announces pending updates, read from a local cache populated by the `check` operation. Example: `atelier  v1.2.0 → v1.3.0`. The banner is quiet and dismissible.
+- **Session-start banner** announces pending updates, read from a local cache populated by the `check` operation. Example: `atelier  v1.2.0 → v1.3.0`. The banner is the agora plugin's own `SessionStart` hook (`hooks/session_start.py`) and is active only when the agora plugin is installed and enabled — it is not installed by `setup.py`. It is quiet and dismissible.
 - **Opportunistic cache refresh.** The session-start hook keeps the cache fresh in the background: if the cache is missing or older than 1 hour, it spawns a detached check subprocess (`scripts/check.py`). The subprocess runs fully backgrounded — no console window, no blocking session start. The banner reflects the latest data on your next session.
 - **Cache TTL ~24h** at the check layer. Offline runs fall back to the last known cache silently.
-- **Optional push-based bumps.** Plugin authors can wire their release workflow to fire a `repository_dispatch` event at agora; agora then opens a PR with the bump within seconds. Setup walkthrough at [docs/automation.md](docs/automation.md).
+- **Optional push-based bumps.** Plugin authors can wire their release workflow to fire a `repository_dispatch` event at their agora instance; agora then opens a PR with the bump within seconds. Setup walkthrough at [docs/automation.md](docs/automation.md).
 
 ## Repository layout
 
@@ -207,6 +218,10 @@ agora/
     dependabot.yml         # weekly pip + github-actions updates
   README.md
 ```
+
+## Distribution
+
+Agora is built to be forked. The canonical `nitekeeper/agora` index is the maintainer's curated set and is **not** accepting third-party plugin submissions at this time — so if you want to index your own plugins, running your own instance is the supported path, not a workaround. Forks are expected: clone or fork the repo, bootstrap it, and register whatever plugins you like into your own `plugins.json`. The maintainer's model and skill recommendations in this repo are the canonical instance's posture; overriding them in a fork is normal and intended. See the wiki's **Run Your Own Agora** guide for an end-to-end walkthrough.
 
 ## Naming
 
