@@ -360,8 +360,9 @@ def _print_success(entry: dict) -> None:
     print(f"  git push -u origin register-{name}")
     print(f"  gh pr create --repo {pr_repo}   # your own instance")
     print()
-    print("Note: keep --repo on your own instance. A bare `gh pr create` in a GitHub")
-    print("fork opens the PR against the UPSTREAM repo by default, not your fork.")
+    print(f"Target your OWN repo ({pr_repo}), not the upstream a fork was made from —")
+    print("both `gh` and the GitHub web UI default a fork's PR base to the upstream.")
+    print("No `gh`? Push the branch, then open the PR on github.com (set the base to your repo).")
 
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
