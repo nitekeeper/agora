@@ -4,13 +4,16 @@ Agora is a curated Claude Code plugin marketplace. `plugins.json` is the human-e
 
 ## Hard dependencies
 
-Agora refuses to run if any of these are missing:
+Agora refuses to run if either of these is missing:
 
 - `git` on PATH
-- `gh` CLI on PATH and authenticated (`gh auth status` exits 0) — license detection, semver discovery, and registration all call the GitHub API
 - Python 3.11+ with `pip install -r requirements.txt` applied
 
 Scripts MUST fail loudly with a remediation hint when a hard dependency is missing — never silently degrade.
+
+### GitHub authentication (NOT a hard dependency)
+
+License detection, semver discovery, and registration call the GitHub API over HTTPS (`urllib` in `scripts/github_api.py`, not the `gh` CLI). Authentication degrades gracefully via `github_api.resolve_token`: `gh auth token` (if `gh` is installed and authenticated) → `GITHUB_TOKEN` → `GH_TOKEN` → anonymous. Anonymous works for **public** plugin repos at GitHub's 60 req/hr limit; indexing a **private** repo — or avoiding the rate limit — requires a token (`gh auth login`, or export `GITHUB_TOKEN`). `gh` is therefore an optional convenience for supplying that token, **not** a hard requirement, and no agora operation hard-fails when it is absent.
 
 ## Untrusted-input boundary
 
