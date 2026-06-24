@@ -28,7 +28,7 @@ Re-runs the agora bootstrap, which registers the agora marketplace in `~/.claude
    python3 scripts/setup.py --yes
    ```
 3. Review the printed diff against `~/.claude/settings.json` and confirm.
-4. Restart Claude Code (or run `/reload-settings`) so the new marketplace registration takes effect.
+4. Restart Claude Code (or run `/reload-plugins`) so the new marketplace registration takes effect.
 
 ## Hard rules
 
