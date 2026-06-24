@@ -39,8 +39,8 @@
     {
       "name": "agora",
       "repository_url": "https://github.com/nitekeeper/agora.git",
-      "current_version": "v0.2.5",
-      "current_sha": "c5cf9dd19152761064e4fac6c00a6817e2d22444",
+      "current_version": "v0.2.6",
+      "current_sha": "f6fe8f1ba7a39f9300edc178f859849dc2e2ccff",
       "description": "Custom Claude Code plugin marketplace. Curated index of plugin pointers with versioned releases.",
       "license": "MIT",
       "author": {
@@ -48,7 +48,7 @@
       },
       "homepage": "https://github.com/nitekeeper/agora",
       "registered_at": "2026-05-15T23:40:58.174074Z",
-      "updated_at": "2026-06-19T18:54:06Z"
+      "updated_at": "2026-06-24T03:35:10Z"
     },
     {
       "name": "loom-agent-chat",
