@@ -38,7 +38,7 @@ The target plugin's repo must have:
    python3 scripts/plugin_register.py --description "Short tagline" --category development
    ```
 
-2. On success the script prints `Registered <name> <version> (sha <short-sha>...)` followed by the git workflow needed to open a PR against agora.
+2. On success the script prints `Registered <name> <version> (sha <short-sha>...)` followed by the git workflow to commit `plugins.json` + `marketplace.json` into **your own** agora instance. The printed `gh pr create --repo <owner>/<repo>` targets the checkout's own origin, not the upstream a fork was made from — keep the `--repo` so the PR lands in your instance.
 
 3. On failure (missing license, empty GH description, no tags, GitHub API error, malformed URL) the script writes a single-line error to stderr and exits 1. Address the underlying cause and re-run.
 

@@ -22,7 +22,7 @@ from pathlib import Path
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from scripts import git_helpers, github_api, license_parser, registry, semver
+from scripts import git_helpers, github_api, license_parser, paths, registry, semver
 from scripts.git_helpers import GitError
 from scripts.github_api import GitHubAPIError
 
@@ -326,20 +326,42 @@ def register(
     return entry
 
 
+def _agora_repo_slug() -> str | None:
+    """Best-effort 'owner/repo' for the agora checkout these files live in.
+
+    Used only to point the printed PR hint at the user's OWN instance rather
+    than the upstream a fork was created from. Returns None if it can't be
+    determined; never raises (this runs after a successful write).
+    """
+    try:
+        url = git_helpers.get_local_remote_url(paths.REPO_ROOT)
+        if not url:
+            return None
+        owner, repo = git_helpers.parse_github_url(url)
+        return f"{owner}/{repo}"
+    except GitError:
+        return None
+
+
 def _print_success(entry: dict) -> None:
     name = entry["name"]
     version = entry["current_version"]
-    sha = entry["current_sha"]
-    short_sha = sha[:7]
+    short_sha = entry["current_sha"][:7]
+    pr_repo = _agora_repo_slug() or "<your-agora-owner>/<your-agora-repo>"
+
     print(f"Registered {name} {version} (sha {short_sha}...)")
     print()
-    print("Next:")
-    print("  cd <agora-repo>")
+    print("Updated plugins.json and recompiled .claude-plugin/marketplace.json in this checkout.")
+    print()
+    print("Next - commit both files to your own agora instance:")
     print(f"  git checkout -b register-{name}")
-    print("  git add plugins.json")
+    print("  git add plugins.json .claude-plugin/marketplace.json")
     print(f'  git commit -m "Register {name} {version}"')
     print(f"  git push -u origin register-{name}")
-    print("  gh pr create")
+    print(f"  gh pr create --repo {pr_repo}   # your own instance")
+    print()
+    print("Note: keep --repo on your own instance. A bare `gh pr create` in a GitHub")
+    print("fork opens the PR against the UPSTREAM repo by default, not your fork.")
 
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
