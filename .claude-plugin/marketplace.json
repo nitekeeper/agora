@@ -68,8 +68,8 @@
       "source": {
         "source": "url",
         "url": "https://github.com/nitekeeper/kaizen.git",
-        "ref": "v0.1.0",
-        "sha": "ee4e4e81df7b878d88d6f6a6d5e0467cbfd4305b"
+        "ref": "v0.1.1",
+        "sha": "64d57ac968b86cd6440b73abf1e0f46dd931c57e"
       },
       "author": {
         "name": "nitekeeper"
