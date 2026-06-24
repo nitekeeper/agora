@@ -67,8 +67,8 @@
     {
       "name": "kaizen",
       "repository_url": "https://github.com/nitekeeper/kaizen.git",
-      "current_version": "v0.1.0",
-      "current_sha": "ee4e4e81df7b878d88d6f6a6d5e0467cbfd4305b",
+      "current_version": "v0.1.1",
+      "current_sha": "64d57ac968b86cd6440b73abf1e0f46dd931c57e",
       "description": "A Claude Code plugin that runs multi-agent improvement cycles against any git repo \u2014 clone, N review/fix cycles, one bundled PR.",
       "license": "MIT",
       "author": {
@@ -76,7 +76,7 @@
       },
       "homepage": "https://github.com/nitekeeper/kaizen",
       "registered_at": "2026-06-24T02:41:56.778015Z",
-      "updated_at": "2026-06-24T02:41:56.778015Z"
+      "updated_at": "2026-06-24T04:51:39Z"
     }
   ]
 }
