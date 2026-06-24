@@ -63,6 +63,20 @@
       "homepage": "https://github.com/nitekeeper/loom-agent-chat",
       "registered_at": "2026-06-02T06:20:03.491741Z",
       "updated_at": "2026-06-02T06:20:03.491741Z"
+    },
+    {
+      "name": "kaizen",
+      "repository_url": "https://github.com/nitekeeper/kaizen.git",
+      "current_version": "v0.1.0",
+      "current_sha": "ee4e4e81df7b878d88d6f6a6d5e0467cbfd4305b",
+      "description": "A Claude Code plugin that runs multi-agent improvement cycles against any git repo \u2014 clone, N review/fix cycles, one bundled PR.",
+      "license": "MIT",
+      "author": {
+        "name": "nitekeeper"
+      },
+      "homepage": "https://github.com/nitekeeper/kaizen",
+      "registered_at": "2026-06-24T02:41:56.778015Z",
+      "updated_at": "2026-06-24T02:41:56.778015Z"
     }
   ]
 }
