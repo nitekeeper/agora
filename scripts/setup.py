@@ -168,7 +168,7 @@ def run_setup(yes: bool = False) -> int:
     print("Agora bootstrap complete.")
     print()
     print("Next steps:")
-    print("  1. Restart Claude Code (or run /reload-settings).")
+    print("  1. Restart Claude Code (or run /reload-plugins).")
     print("  2. Open /plugins > Marketplaces > agora to browse plugins.")
     print("  3. Install plugins from the UI.")
     return 0
