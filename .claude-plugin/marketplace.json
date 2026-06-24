@@ -61,6 +61,20 @@
         "name": "nitekeeper"
       },
       "homepage": "https://github.com/nitekeeper/loom-agent-chat"
+    },
+    {
+      "name": "kaizen",
+      "description": "A Claude Code plugin that runs multi-agent improvement cycles against any git repo \u2014 clone, N review/fix cycles, one bundled PR.",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/nitekeeper/kaizen.git",
+        "ref": "v0.1.0",
+        "sha": "ee4e4e81df7b878d88d6f6a6d5e0467cbfd4305b"
+      },
+      "author": {
+        "name": "nitekeeper"
+      },
+      "homepage": "https://github.com/nitekeeper/kaizen"
     }
   ]
 }
