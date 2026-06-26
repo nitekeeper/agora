@@ -12,8 +12,8 @@
       "source": {
         "source": "url",
         "url": "https://github.com/nitekeeper/atelier.git",
-        "ref": "v1.11.0",
-        "sha": "cfe294fd417eca6beef180dd7bf6e2c41940d9a4"
+        "ref": "v1.11.1",
+        "sha": "b9c823db2d70ad0aae789d5d8288997cd9076fc5"
       },
       "author": {
         "name": "nitekeeper"
