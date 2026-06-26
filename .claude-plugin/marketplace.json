@@ -8,13 +8,23 @@
   "plugins": [
     {
       "name": "atelier",
-      "description": "Shared workspace methodology and dev workflow for human-AI development teams",
+      "description": "Shared workspace and methodology for a human developer collaborating with AI agents on a software project \u2014 runs local-only or backed by Memex.",
       "source": {
         "source": "url",
         "url": "https://github.com/nitekeeper/atelier.git",
-        "ref": "v1.10.1",
-        "sha": "3023ceac298cd476570da4561d56cddc6fb169fd"
+        "ref": "v1.12.0",
+        "sha": "fa88e1143605e22aac008b92a8c234b8da23a5f2"
       },
+      "category": "development",
+      "keywords": [
+        "agent-orchestration",
+        "ai-agents",
+        "claude-code-plugin",
+        "developer-tools",
+        "pair-programming",
+        "sqlite",
+        "workflow"
+      ],
       "author": {
         "name": "nitekeeper"
       },

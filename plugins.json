@@ -11,16 +11,26 @@
     {
       "name": "atelier",
       "repository_url": "https://github.com/nitekeeper/atelier.git",
-      "current_version": "v1.10.1",
-      "current_sha": "3023ceac298cd476570da4561d56cddc6fb169fd",
-      "description": "Shared workspace methodology and dev workflow for human-AI development teams",
+      "current_version": "v1.12.0",
+      "current_sha": "fa88e1143605e22aac008b92a8c234b8da23a5f2",
+      "description": "Shared workspace and methodology for a human developer collaborating with AI agents on a software project \u2014 runs local-only or backed by Memex.",
       "license": "MIT",
+      "category": "development",
+      "keywords": [
+        "agent-orchestration",
+        "ai-agents",
+        "claude-code-plugin",
+        "developer-tools",
+        "pair-programming",
+        "sqlite",
+        "workflow"
+      ],
       "author": {
         "name": "nitekeeper"
       },
       "homepage": "https://github.com/nitekeeper/atelier",
       "registered_at": "2026-05-15T23:40:52.358955Z",
-      "updated_at": "2026-06-19T19:35:44Z"
+      "updated_at": "2026-06-26T20:56:46.482559Z"
     },
     {
       "name": "memex",
