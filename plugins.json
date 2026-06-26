@@ -25,8 +25,8 @@
     {
       "name": "memex",
       "repository_url": "https://github.com/nitekeeper/memex.git",
-      "current_version": "v2.14.0",
-      "current_sha": "f877e09c3788eff68273e77ab37a93fd40ba3588",
+      "current_version": "v2.15.0",
+      "current_sha": "0251e824168399539081387a3e5c504cf33dd6d3",
       "description": "Persistent context, knowledge wiki, and ask-anything memory for Claude Code sessions",
       "license": "MIT",
       "author": {
@@ -34,7 +34,7 @@
       },
       "homepage": "https://github.com/nitekeeper/memex",
       "registered_at": "2026-05-15T23:40:55.313432Z",
-      "updated_at": "2026-06-26T22:00:09Z"
+      "updated_at": "2026-06-26T23:17:44Z"
     },
     {
       "name": "agora",
